@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Admin — Decorisa</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .admin-sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0; width: 220px;
+    background: var(--color-bg-dark); display: flex; flex-direction: column;
+    z-index: 100; padding: 32px 0;
+  }
+  .admin-sidebar-logo {
+    padding: 0 28px 32px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+    margin-bottom: 20px;
+  }
+  .admin-sidebar-logo .logo { font-size: 20px; }
+  .admin-sidebar-logo .logo .logo-deco { color: #F0EBE3; }
+  .admin-sidebar-logo .logo .logo-risa { color: #7A7468; }
+  .admin-sidebar-logo span { display: block; font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: #4A4840; margin-top: 4px; }
+  .sidebar-nav { flex: 1; }
+  .sidebar-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 28px; font-size: 12px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: #5A5650;
+    cursor: pointer; background: none; border: none;
+    font-family: var(--font-body); width: 100%; text-align: left;
+    transition: all var(--transition);
+  }
+  .sidebar-link:hover { color: #C4BAA8; background: rgba(255,255,255,0.03); }
+  .sidebar-link.active { color: #F0EBE3; background: rgba(255,255,255,0.06); border-left: 2px solid #C4BAA8; }
+  .sidebar-link svg { flex-shrink: 0; }
+  .sidebar-footer { padding: 20px 28px; border-top: 0.5px solid rgba(255,255,255,0.06); }
+  .admin-main { margin-left: 220px; min-height: 100vh; background: var(--color-bg); }
+  .admin-topbar {
+    background: var(--color-bg); border-bottom: 0.5px solid var(--color-border);
+    padding: 18px 40px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .admin-topbar h1 { font-family: var(--font-display); font-size: 24px; font-weight: 300; }
+  .admin-content { padding: 36px 40px; }
+  .chart-bar-wrap { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-top: 16px; }
+  .chart-bar-col { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+  .chart-bar { width: 100%; background: var(--color-bg-alt); position: relative; transition: height 0.5s ease; }
+  .chart-bar-fill { position: absolute; bottom: 0; left: 0; right: 0; background: var(--color-concrete); }
+  .chart-bar-label { font-size: 10px; color: var(--color-text-light); letter-spacing: 0.06em; }
+  .chart-bar-val { font-size: 11px; color: var(--color-text-muted); font-weight: 500; }
+  .badge-stock-ok { background: rgba(74,120,74,0.1); color: #2A6A2A; font-size: 10px; padding: 3px 8px; letter-spacing: 0.08em; }
+  .badge-stock-low { background: rgba(180,146,74,0.15); color: #7A5A18; font-size: 10px; padding: 3px 8px; letter-spacing: 0.08em; }
+  .img-upload-area {
+    border: 1px dashed var(--color-border-mid); padding: 32px; text-align: center;
+    cursor: pointer; transition: border-color var(--transition);
+  }
+  .img-upload-area:hover { border-color: var(--color-text); }
+  .img-upload-area svg { margin: 0 auto 10px; display: block; color: var(--color-text-light); }
+  @media(max-width:768px) {
+    .admin-sidebar { width: 100%; position: relative; height: auto; padding: 20px 0; }
+    .admin-main { margin-left: 0; }
+    .sidebar-nav { display: flex; overflow-x: auto; padding-bottom: 4px; }
+    .sidebar-link { white-space: nowrap; border-left: none !important; border-bottom: 2px solid transparent; }
+    .sidebar-link.active { border-bottom-color: #C4BAA8; }
+    .admin-content { padding: 20px; }
+    .admin-topbar { padding: 14px 20px; }
+    .admin-metrics { grid-template-columns: 1fr 1fr !important; }
+  }
+</style>
+</head>
+<body style="margin:0;background:var(--color-bg)">
+
+<!-- SIDEBAR -->
+<aside class="admin-sidebar" aria-label="Painel administrativo">
+  <div class="admin-sidebar-logo">
+    <a href="index.html" class="logo"><span class="logo-deco">Deco</span><span class="logo-risa">risa</span></a>
+    <span>Painel Admin</span>
+  </div>
+  <nav class="sidebar-nav" aria-label="Menu admin">
+    <button class="sidebar-link active" data-panel="dashboard" onclick="switchPanel(this,'dashboard')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="sidebar-link" data-panel="pedidos" onclick="switchPanel(this,'pedidos')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Pedidos
+    </button>
+    <button class="sidebar-link" data-panel="produtos" onclick="switchPanel(this,'produtos')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+      Produtos
+    </button>
+    <button class="sidebar-link" data-panel="cadastro" onclick="switchPanel(this,'cadastro')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Novo produto
+    </button>
+    <button class="sidebar-link" data-panel="clientes" onclick="switchPanel(this,'clientes')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Clientes
+    </button>
+    <button class="sidebar-link" data-panel="cupons" onclick="switchPanel(this,'cupons')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+      Cupons
+    </button>
+    <button class="sidebar-link" data-panel="banners" onclick="switchPanel(this,'banners')">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      Banners
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="index.html" style="font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#4A4840;display:flex;align-items:center;gap:8px">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Ver loja
+    </a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="admin-main">
+  <div class="admin-topbar">
+    <h1 id="adminPageTitle">Dashboard</h1>
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:12px;color:var(--color-text-light)">Olá, Decorisa Admin</span>
+      <div style="width:32px;height:32px;background:var(--color-bg-alt);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:14px;color:var(--color-text-muted)">D</div>
+    </div>
+  </div>
+
+  <div class="admin-content">
+
+    <!-- DASHBOARD -->
+    <div class="admin-panel active" id="admin-dashboard">
+      <div class="admin-metrics" id="adminMetrics" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:36px"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:36px">
+        <!-- Vendas por mês -->
+        <div style="background:var(--color-bg-alt);border:0.5px solid var(--color-border);padding:24px">
+          <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:4px">Receita mensal</div>
+          <div style="font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:4px">R$ 4.280,00</div>
+          <div style="font-size:12px;color:#4A7A4A">↑ +18% vs. mês anterior</div>
+          <div class="chart-bar-wrap" aria-label="Gráfico de vendas mensais">
+            <div class="chart-bar-col"><div class="chart-bar-val">1.8k</div><div class="chart-bar" style="height:100px"><div class="chart-bar-fill" style="height:42%"></div></div><div class="chart-bar-label">Jan</div></div>
+            <div class="chart-bar-col"><div class="chart-bar-val">2.1k</div><div class="chart-bar" style="height:100px"><div class="chart-bar-fill" style="height:49%"></div></div><div class="chart-bar-label">Fev</div></div>
+            <div class="chart-bar-col"><div class="chart-bar-val">1.6k</div><div class="chart-bar" style="height:100px"><div class="chart-bar-fill" style="height:37%"></div></div><div class="chart-bar-label">Mar</div></div>
+            <div class="chart-bar-col"><div class="chart-bar-val">3.2k</div><div class="chart-bar" style="height:100px"><div class="chart-bar-fill" style="height:75%"></div></div><div class="chart-bar-label">Abr</div></div>
+            <div class="chart-bar-col"><div class="chart-bar-val">4.3k</div><div class="chart-bar" style="height:100px"><div class="chart-bar-fill" style="height:100%"></div></div><div class="chart-bar-label">Mai</div></div>
+          </div>
+        </div>
+
+        <!-- Pedidos recentes -->
+        <div style="background:var(--color-bg-alt);border:0.5px solid var(--color-border);padding:24px">
+          <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:16px">Pedidos recentes</div>
+          <div id="recentOrdersList"></div>
+        </div>
+      </div>
+
+      <!-- Estoque baixo -->
+      <div style="background:var(--color-bg-alt);border:0.5px solid var(--color-border);padding:24px">
+        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:16px">Alertas de estoque</div>
+        <div id="stockAlerts"></div>
+      </div>
+    </div>
+
+    <!-- PEDIDOS -->
+    <div class="admin-panel" id="admin-pedidos">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="filter-btn active" onclick="filterPedidos(this,'todos')">Todos</button>
+          <button class="filter-btn" onclick="filterPedidos(this,'processando')">Processando</button>
+          <button class="filter-btn" onclick="filterPedidos(this,'producao')">Em produção</button>
+          <button class="filter-btn" onclick="filterPedidos(this,'enviado')">Enviados</button>
+          <button class="filter-btn" onclick="filterPedidos(this,'entregue')">Entregues</button>
+        </div>
+        <input type="search" placeholder="Buscar pedido ou cliente..." style="border:0.5px solid var(--color-border-mid);padding:8px 14px;font-size:12px;font-family:var(--font-body);color:var(--color-text);background:var(--color-bg);width:220px;outline:none">
+      </div>
+      <div class="admin-table-wrap" id="adminPedidosTable"></div>
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="admin-panel" id="admin-produtos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <span style="font-size:13px;color:var(--color-text-light)" id="prodCount"></span>
+        <button class="btn-primary" onclick="switchPanel(document.querySelector('[data-panel=cadastro]'),'cadastro')" style="font-size:10px;padding:10px 20px">+ Novo produto</button>
+      </div>
+      <div class="admin-table-wrap" id="adminProdutosTable"></div>
+    </div>
+
+    <!-- CADASTRO / EDIÇÃO DE PRODUTO -->
+    <div class="admin-panel" id="admin-cadastro">
+      <h2 style="font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:28px">Cadastrar produto</h2>
+      <form class="admin-form" onsubmit="adminSalvarProduto(event)" style="max-width:680px">
+        <div class="form-row">
+          <div class="form-group"><label>Nome do produto</label><input type="text" id="adminProdNome" placeholder="Ex: Vaso Bruto N.º 13" required></div>
+          <div class="form-group"><label>SKU</label><input type="text" placeholder="DEC-XX-000"></div>
+        </div>
+        <div class="form-group"><label>Categoria</label>
+          <select>
+            <option value="">Selecionar categoria</option>
+            <option>vasos</option><option>bandejas</option><option>esferas</option>
+            <option>kits</option><option>personalizados</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Preço (R$)</label><input type="number" id="adminProdPreco" placeholder="0,00" step="0.01" min="0"></div>
+          <div class="form-group"><label>Estoque</label><input type="number" id="adminProdEstoque" placeholder="0" min="0"></div>
+        </div>
+        <div class="form-group"><label>Prazo de produção</label>
+          <select>
+            <option>5 a 7 dias úteis</option><option>7 a 10 dias úteis</option><option>10 a 14 dias úteis</option><option>A combinar</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Descrição</label><textarea placeholder="Descreva a peça com emoção e detalhes técnicos..." rows="5"></textarea></div>
+        <div class="form-group">
+          <label>Fotos do produto</label>
+          <div class="img-upload-area" onclick="showToast('Upload de imagem — conectar ao servidor')">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <p style="font-size:13px;color:var(--color-text-muted);margin-bottom:4px">Clique para fazer upload</p>
+            <p style="font-size:11px;color:var(--color-text-light)">PNG, JPG ou WebP — máx. 4 MB por foto</p>
+          </div>
+        </div>
+        <div class="form-group"><label>Cores disponíveis</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap" id="adminColorPicker">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Natural</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Cimento</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Escuro</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Areia</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Claro</label>
+          </div>
+        </div>
+        <div class="form-group"><label>Tamanhos</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> P</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> M</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> G</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Único</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer"><input type="checkbox" style="accent-color:var(--color-text)"> Sob medida</label>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button type="submit" class="btn-primary">Salvar produto</button>
+          <button type="button" class="btn-ghost" onclick="showToast('Rascunho salvo!')">Salvar rascunho</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- CLIENTES -->
+    <div class="admin-panel" id="admin-clientes">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+        <span style="font-size:13px;color:var(--color-text-light)">6 clientes cadastrados</span>
+        <input type="search" placeholder="Buscar cliente..." style="border:0.5px solid var(--color-border-mid);padding:8px 14px;font-size:12px;font-family:var(--font-body);color:var(--color-text);background:var(--color-bg);width:220px;outline:none">
+      </div>
+      <div class="admin-table-wrap">
+        <table class="admin-table" aria-label="Lista de clientes">
+          <thead><tr><th>Nome</th><th>E-mail</th><th>Cidade</th><th>Pedidos</th><th>Total gasto</th><th>Desde</th></tr></thead>
+          <tbody>
+            <tr><td>Ana Paula M.</td><td>anapaulam@email.com</td><td>São Paulo</td><td>3</td><td>R$ 1.168,00</td><td>Jan 2025</td></tr>
+            <tr><td>Lucas R.</td><td>lucas.r@email.com</td><td>Belo Horizonte</td><td>1</td><td>R$ 590,00</td><td>Fev 2025</td></tr>
+            <tr><td>Fernanda C.</td><td>fc@email.com</td><td>Curitiba</td><td>2</td><td>R$ 469,00</td><td>Mar 2025</td></tr>
+            <tr><td>João S.</td><td>joaos@email.com</td><td>Rio de Janeiro</td><td>1</td><td>R$ 578,00</td><td>Abr 2025</td></tr>
+            <tr><td>Beatriz C.</td><td>beatriz@email.com</td><td>Porto Alegre</td><td>2</td><td>R$ 638,00</td><td>Abr 2025</td></tr>
+            <tr><td>André P.</td><td>andrepinto@email.com</td><td>Brasília</td><td>1</td><td>R$ 349,00</td><td>Mai 2025</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CUPONS -->
+    <div class="admin-panel" id="admin-cupons">
+      <h2 style="font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:28px">Cupons de desconto</h2>
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:36px;align-items:start">
+        <div>
+          <table class="admin-table" aria-label="Cupons">
+            <thead><tr><th>Código</th><th>Desconto</th><th>Usos</th><th>Validade</th><th>Status</th><th>Ações</th></tr></thead>
+            <tbody>
+              <tr><td><strong>DECORISA10</strong></td><td>10%</td><td>24</td><td>31/12/2025</td><td><span class="badge-stock-ok">Ativo</span></td><td><button onclick="showToast('Cupom desativado')" style="font-size:11px;background:none;border:none;cursor:pointer;color:var(--color-text-light);font-family:var(--font-body);text-transform:uppercase;letter-spacing:0.08em">Desativar</button></td></tr>
+              <tr><td><strong>DECORISA15</strong></td><td>15%</td><td>8</td><td>30/06/2025</td><td><span class="badge-stock-ok">Ativo</span></td><td><button onclick="showToast('Cupom desativado')" style="font-size:11px;background:none;border:none;cursor:pointer;color:var(--color-text-light);font-family:var(--font-body);text-transform:uppercase;letter-spacing:0.08em">Desativar</button></td></tr>
+              <tr><td><strong>BEMVINDO</strong></td><td>5%</td><td>41</td><td>Sem validade</td><td><span class="badge-stock-ok">Ativo</span></td><td><button onclick="showToast('Cupom desativado')" style="font-size:11px;background:none;border:none;cursor:pointer;color:var(--color-text-light);font-family:var(--font-body);text-transform:uppercase;letter-spacing:0.08em">Desativar</button></td></tr>
+              <tr><td><strong>VERAO20</strong></td><td>20%</td><td>15</td><td>31/01/2025</td><td><span class="badge-stock-low">Expirado</span></td><td>—</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:var(--color-bg-alt);border:0.5px solid var(--color-border);padding:24px">
+          <h3 style="font-family:var(--font-display);font-size:22px;font-weight:400;margin-bottom:20px">Novo cupom</h3>
+          <form onsubmit="criarCupom(event)" class="admin-form">
+            <div class="form-group"><label>Código</label><input type="text" placeholder="EX: NATAL25" style="text-transform:uppercase" required></div>
+            <div class="form-group"><label>Tipo de desconto</label><select><option>Percentual (%)</option><option>Valor fixo (R$)</option></select></div>
+            <div class="form-group"><label>Valor do desconto</label><input type="number" placeholder="10" min="1" max="100" required></div>
+            <div class="form-group"><label>Validade</label><input type="date"></div>
+            <div class="form-group"><label>Limite de usos</label><input type="number" placeholder="Ilimitado"></div>
+            <button type="submit" class="btn-primary">Criar cupom</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANNERS -->
+    <div class="admin-panel" id="admin-banners">
+      <h2 style="font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:28px">Gerenciar banners</h2>
+      <div style="display:grid;gap:16px;margin-bottom:32px">
+        <div style="border:0.5px solid var(--color-border);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:4px">Banner principal (Hero)</div>
+            <div style="font-family:var(--font-display);font-size:18px">"Design que respira presença."</div>
+            <div style="font-size:12px;color:var(--color-text-light);margin-top:4px">Coleção 2025 · Botão: Explorar Coleção</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-outline" style="font-size:10px;padding:8px 16px" onclick="showToast('Editor de banner aberto')">Editar</button>
+            <span class="badge-stock-ok">Ativo</span>
+          </div>
+        </div>
+        <div style="border:0.5px solid var(--color-border);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:4px">Banner CTA — personalização</div>
+            <div style="font-family:var(--font-display);font-size:18px">"Sua peça, do seu jeito."</div>
+            <div style="font-size:12px;color:var(--color-text-light);margin-top:4px">Fundo escuro · Link: WhatsApp</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-outline" style="font-size:10px;padding:8px 16px" onclick="showToast('Editor de banner aberto')">Editar</button>
+            <span class="badge-stock-ok">Ativo</span>
+          </div>
+        </div>
+        <div style="border:1px dashed var(--color-border);padding:20px 24px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:72px" onclick="showToast('Novo banner — editor abrindo')">
+          <span style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light)">+ Adicionar novo banner</span>
+        </div>
+      </div>
+
+      <div style="background:var(--color-bg-alt);border:0.5px solid var(--color-border);padding:24px;max-width:560px">
+        <h3 style="font-family:var(--font-display);font-size:20px;font-weight:400;margin-bottom:16px">Editar texto do hero</h3>
+        <form onsubmit="salvarBanner(event)" class="admin-form">
+          <div class="form-group"><label>Título linha 1</label><input type="text" value="Design"></div>
+          <div class="form-group"><label>Título linha 2</label><input type="text" value="que respira presença."></div>
+          <div class="form-group"><label>Subtítulo</label><textarea rows="2">Cada peça é concebida com intenção. Concreto, forma e textura.</textarea></div>
+          <div class="form-group"><label>Texto do botão</label><input type="text" value="Explorar Coleção"></div>
+          <div class="form-group"><label>Label lateral (eyebrow)</label><input type="text" value="Coleção 2025"></div>
+          <button type="submit" class="btn-primary">Salvar banner</button>
+        </form>
+      </div>
+    </div>
+
+  </div><!-- /admin-content -->
+</div><!-- /admin-main -->
+
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<script src="app.js"></script>
+<script>
+function switchPanel(btn, panelId) {
+  document.querySelectorAll('.sidebar-link').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('admin-' + panelId);
+  if (panel) panel.classList.add('active');
+  const titles = { dashboard:'Dashboard', pedidos:'Pedidos', produtos:'Produtos', cadastro:'Novo produto', clientes:'Clientes', cupons:'Cupons', banners:'Banners' };
+  const t = document.getElementById('adminPageTitle');
+  if (t) t.textContent = titles[panelId] || panelId;
+}
+
+function filterPedidos(btn, status) {
+  document.querySelectorAll('#admin-pedidos .filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  showToast('Filtrando: ' + (status === 'todos' ? 'todos os pedidos' : status));
+}
+
+function criarCupom(e) {
+  e.preventDefault();
+  showToast('Cupom criado com sucesso!');
+  e.target.reset();
+}
+
+function salvarBanner(e) {
+  e.preventDefault();
+  showToast('Banner atualizado!');
+}
+
+// Render dos alertas de estoque
+document.addEventListener('DOMContentLoaded', () => {
+  const alertsEl = document.getElementById('stockAlerts');
+  if (alertsEl && window.PRODUCTS) {
+    const low = PRODUCTS.filter(p => p.stock < 5);
+    if (low.length === 0) {
+      alertsEl.innerHTML = '<p style="font-size:13px;color:#4A7A4A">✓ Todos os produtos com estoque adequado.</p>';
+    } else {
+      alertsEl.innerHTML = low.map(p => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:0.5px solid var(--color-border)">
+          <div>
+            <span style="font-size:13px;color:var(--color-text)">${p.name}</span>
+            <span style="font-size:11px;color:var(--color-text-light);margin-left:12px">${p.sku}</span>
+          </div>
+          <span class="badge-stock-low">${p.stock} restantes</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  const recentEl = document.getElementById('recentOrdersList');
+  if (recentEl) {
+    const recent = [
+      { id:'DEC-482931', client:'Ana Paula M.', total:'R$ 590,00', status:'enviado' },
+      { id:'DEC-481720', client:'João S.',       total:'R$ 578,00', status:'producao' },
+      { id:'DEC-480305', client:'Fernanda C.',   total:'R$ 280,00', status:'processando' },
+    ];
+    const statusLabel = { enviado:'Enviado', producao:'Em produção', processando:'Processando', entregue:'Entregue' };
+    recentEl.innerHTML = recent.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--color-border)">
+        <div>
+          <div style="font-size:12px;color:var(--color-text-muted)">${p.id}</div>
+          <div style="font-size:13px;color:var(--color-text)">${p.client}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:500">${p.total}</div>
+          <span class="pedido-status status-${p.status}" style="font-size:9px">${statusLabel[p.status]}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const countEl = document.getElementById('prodCount');
+  if (countEl && window.PRODUCTS) countEl.textContent = `${PRODUCTS.length} produtos cadastrados`;
+});
+</script>
+</body>
+</html>

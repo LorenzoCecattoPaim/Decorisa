@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Decorisa — Objetos artesanais em concreto. Design exclusivo, produção sob demanda. Vasos, bandejas e decoração premium.">
+<meta name="keywords" content="decoração artesanal, concreto, vasos, bandejas, design, exclusivo, premium">
+<meta property="og:title" content="Decorisa — Arte em Concreto">
+<meta property="og:description" content="Objetos artesanais em concreto. Design exclusivo, produção sob demanda.">
+<meta property="og:type" content="website">
+<title>Decorisa — Arte em Concreto</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- HEADER / NAV -->
+<header class="site-header" id="site-header">
+  <div class="header-inner">
+    <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <a href="index.html" class="logo" aria-label="Decorisa — Home">
+      <span class="logo-deco">Deco</span><span class="logo-risa">risa</span>
+    </a>
+    <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
+      <ul>
+        <li><a href="loja.html">Loja</a></li>
+        <li><a href="loja.html#colecoes">Coleções</a></li>
+        <li><a href="sobre.html">Sobre</a></li>
+        <li><a href="contato.html">Contato</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a href="cliente.html" class="action-link" aria-label="Minha conta">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </a>
+      <button class="cart-toggle" id="cartToggle" aria-label="Abrir carrinho">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- CART DRAWER -->
+<aside class="cart-drawer" id="cartDrawer" aria-label="Carrinho de compras" aria-hidden="true">
+  <div class="cart-overlay" id="cartOverlay"></div>
+  <div class="cart-panel">
+    <div class="cart-header">
+      <h2>Seu Carrinho</h2>
+      <button class="cart-close" id="cartClose" aria-label="Fechar carrinho">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="cart-body" id="cartBody">
+      <div class="cart-empty" id="cartEmpty">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+        <p>Seu carrinho está vazio.</p>
+        <a href="loja.html" class="btn-primary">Explorar loja</a>
+      </div>
+      <ul class="cart-items" id="cartItems"></ul>
+    </div>
+    <div class="cart-footer" id="cartFooter" style="display:none">
+      <div class="cart-shipping">
+        <label>Calcular frete</label>
+        <div class="shipping-row">
+          <input type="text" id="cepInput" placeholder="00000-000" maxlength="9" class="cep-input">
+          <button onclick="calcularFrete()" class="btn-calcfrete">Calcular</button>
+        </div>
+        <p class="shipping-result" id="shippingResult"></p>
+      </div>
+      <div class="cart-coupon">
+        <label>Cupom de desconto</label>
+        <div class="coupon-row">
+          <input type="text" id="couponInput" placeholder="DECORISA10" class="coupon-input">
+          <button onclick="aplicarCupom()" class="btn-coupon">Aplicar</button>
+        </div>
+        <p class="coupon-result" id="couponResult"></p>
+      </div>
+      <div class="cart-totals">
+        <div class="total-row"><span>Subtotal</span><span id="cartSubtotal">R$ 0,00</span></div>
+        <div class="total-row" id="discountRow" style="display:none;color:#7A6E5A"><span>Desconto</span><span id="cartDiscount"></span></div>
+        <div class="total-row" id="freteRow" style="display:none"><span>Frete</span><span id="cartFrete"></span></div>
+        <div class="total-row total-final"><span>Total</span><span id="cartTotal">R$ 0,00</span></div>
+      </div>
+      <a href="checkout.html" class="btn-primary btn-block">Finalizar pedido</a>
+      <a href="loja.html" class="btn-ghost btn-block" style="margin-top:10px">Continuar comprando</a>
+    </div>
+  </div>
+</aside>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-left">
+    <div class="hero-bg-letter" aria-hidden="true">D</div>
+    <div class="hero-content animate-in">
+      <div class="eyebrow"><span class="eyebrow-line"></span>Coleção 2025</div>
+      <h1 class="hero-title">Design<br>que <em>respira</em><br>presença.</h1>
+      <p class="hero-subtitle">Cada peça é concebida com intenção. Concreto, forma e textura — artesanato que transforma espaços em experiências únicas.</p>
+      <div class="hero-ctas">
+        <a href="loja.html" class="btn-primary">Explorar Coleção</a>
+        <a href="sobre.html" class="btn-outline">Nossa História</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><strong>+200</strong><span>peças criadas</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>100%</strong><span>artesanal</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><strong>5★</strong><span>avaliações</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-visual">
+      <div class="hero-product-scene">
+        <svg class="hero-svg" viewBox="0 0 400 500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Sombra base -->
+          <ellipse cx="200" cy="470" rx="110" ry="16" fill="rgba(0,0,0,0.12)"/>
+          <!-- Pedestal/bandeja -->
+          <rect x="110" y="440" width="180" height="18" rx="3" fill="#8A8480"/>
+          <rect x="120" y="434" width="160" height="8" rx="2" fill="#A4988E" opacity="0.7"/>
+          <!-- Vaso principal corpo -->
+          <path d="M148 138 Q136 210 140 310 Q150 400 200 405 Q250 400 260 310 Q264 210 252 138 Z" fill="url(#vasoMain)"/>
+          <!-- Abertura do vaso -->
+          <ellipse cx="200" cy="138" rx="52" ry="13" fill="#B0A89E"/>
+          <ellipse cx="200" cy="138" rx="44" ry="9" fill="#8A847E" opacity="0.6"/>
+          <!-- Textura linhas vaso -->
+          <line x1="182" y1="155" x2="178" y2="380" stroke="rgba(255,255,255,0.09)" stroke-width="2"/>
+          <line x1="194" y1="148" x2="191" y2="390" stroke="rgba(255,255,255,0.06)" stroke-width="1.5"/>
+          <line x1="218" y1="148" x2="215" y2="390" stroke="rgba(255,255,255,0.05)" stroke-width="1"/>
+          <!-- Esfera decorativa -->
+          <circle cx="300" cy="390" r="44" fill="url(#sphereMain)"/>
+          <circle cx="288" cy="378" r="8" fill="rgba(255,255,255,0.12)"/>
+          <!-- Pequeno cubo -->
+          <rect x="90" y="400" width="52" height="34" rx="2" fill="#9C9590"/>
+          <rect x="90" y="396" width="52" height="8" rx="2" fill="#B0A8A0"/>
+          <line x1="104" y1="404" x2="104" y2="430" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+          <defs>
+            <linearGradient id="vasoMain" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stop-color="#9A9490"/>
+              <stop offset="35%" stop-color="#C4BEB6"/>
+              <stop offset="70%" stop-color="#B4AEA6"/>
+              <stop offset="100%" stop-color="#8A8480"/>
+            </linearGradient>
+            <linearGradient id="sphereMain" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#CECAC2"/>
+              <stop offset="100%" stop-color="#9A9590"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+    </div>
+    <div class="hero-product-tag">
+      <span class="tag-name">Vaso Bruto N.º 12</span>
+      <span class="tag-info">Concreto artesanal</span>
+      <span class="tag-price">R$ 289,00</span>
+    </div>
+    <div class="hero-scroll-hint" aria-hidden="true">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </div>
+</section>
+
+<!-- STRIP DE VALORES -->
+<div class="values-strip">
+  <div class="strip-inner">
+    <div class="strip-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      Feito à mão
+    </div>
+    <div class="strip-dot" aria-hidden="true">◆</div>
+    <div class="strip-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Produção sob demanda
+    </div>
+    <div class="strip-dot" aria-hidden="true">◆</div>
+    <div class="strip-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Design exclusivo
+    </div>
+    <div class="strip-dot" aria-hidden="true">◆</div>
+    <div class="strip-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+      Frete para todo Brasil
+    </div>
+    <div class="strip-dot" aria-hidden="true">◆</div>
+    <div class="strip-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 012 2.41 2 2 0 014 .21h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+      Atendimento pelo WhatsApp
+    </div>
+  </div>
+</div>
+
+<!-- DESTAQUES -->
+<section class="section-destaques" id="destaques">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow"><span class="eyebrow-line"></span>Destaques</div>
+      <h2 class="section-title">Peças que <em>definem</em> espaços</h2>
+      <div class="section-divider"></div>
+      <p class="section-subtitle">Cada objeto é produzido artesanalmente, com atenção absoluta ao detalhe e ao acabamento em concreto de alta qualidade.</p>
+    </div>
+
+    <div class="products-grid" id="destaquesGrid">
+      <!-- Gerado por JS -->
+    </div>
+
+    <div class="section-cta">
+      <a href="loja.html" class="btn-outline">Ver coleção completa</a>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE -->
+<section class="section-sobre">
+  <div class="sobre-visual" aria-hidden="true">
+    <div class="sobre-shapes">
+      <div class="sobre-shape shape-tall"></div>
+      <div class="sobre-shape shape-mid"></div>
+      <div class="sobre-shape shape-round"></div>
+    </div>
+    <div class="sobre-studio-tag">Studio · São Paulo — SP</div>
+  </div>
+  <div class="sobre-content">
+    <div class="eyebrow"><span class="eyebrow-line"></span>Sobre a marca</div>
+    <blockquote class="sobre-quote">"Criamos para quem valoriza o detalhe."</blockquote>
+    <p class="sobre-text">Cada peça da Decorisa nasce de um processo artesanal cuidadoso — do molde à textura final. Trabalhamos com concreto de alta qualidade e técnicas desenvolvidas ao longo de anos, resultando em objetos únicos com alma e presença.</p>
+    <p class="sobre-text">Produzimos sob demanda, porque acreditamos que algo feito para você deve ser pensado para você. Não há dois objetos iguais.</p>
+    <a href="sobre.html" class="btn-outline">Conhecer a história</a>
+  </div>
+</section>
+
+<!-- PROCESSO -->
+<section class="section-processo" id="processo">
+  <div class="processo-header">
+    <div class="eyebrow eyebrow-center"><span class="eyebrow-line"></span>Processo<span class="eyebrow-line"></span></div>
+    <h2 class="section-title" style="text-align:center">Do conceito à <em>entrega</em></h2>
+    <div class="section-divider"></div>
+  </div>
+  <div class="processo-steps">
+    <div class="processo-step">
+      <div class="processo-num" aria-hidden="true">01</div>
+      <h3 class="processo-title">Conceito</h3>
+      <p class="processo-text">Cada peça começa com um esboço. Forma, proporção e intenção — pensados antes de tocar o material.</p>
+    </div>
+    <div class="processo-arrow" aria-hidden="true">→</div>
+    <div class="processo-step">
+      <div class="processo-num" aria-hidden="true">02</div>
+      <h3 class="processo-title">Moldagem</h3>
+      <p class="processo-text">O concreto é preparado e moldado à mão. Cada camada recebe atenção total.</p>
+    </div>
+    <div class="processo-arrow" aria-hidden="true">→</div>
+    <div class="processo-step">
+      <div class="processo-num" aria-hidden="true">03</div>
+      <h3 class="processo-title">Cura</h3>
+      <p class="processo-text">A peça descansa no tempo certo. A qualidade do concreto depende da paciência.</p>
+    </div>
+    <div class="processo-arrow" aria-hidden="true">→</div>
+    <div class="processo-step">
+      <div class="processo-num" aria-hidden="true">04</div>
+      <h3 class="processo-title">Acabamento</h3>
+      <p class="processo-text">Lixamento, selagem e controle de qualidade final — só então a peça está pronta para ser sua.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DIFERENCIAIS -->
+<section class="section-diferenciais">
+  <div class="container">
+    <div class="eyebrow eyebrow-light eyebrow-center"><span class="eyebrow-line eyebrow-line-dark"></span>Por que Decorisa<span class="eyebrow-line eyebrow-line-dark"></span></div>
+    <h2 class="section-title" style="color:#F0EBE3;text-align:center;margin-top:8px">O que nos <em>diferencia</em></h2>
+    <div class="section-divider" style="background:rgba(196,186,168,0.3)"></div>
+    <div class="diferenciais-grid">
+      <div class="diferencial-card">
+        <div class="diferencial-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="diferencial-title">100% Artesanal</h3>
+        <p class="diferencial-text">Nenhuma peça é produzida em série. Cada item é trabalhado individualmente, a mão, com atenção única.</p>
+      </div>
+      <div class="diferencial-card">
+        <div class="diferencial-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="diferencial-title">Sob Demanda</h3>
+        <p class="diferencial-text">Produzimos após o seu pedido. Sem estoque genérico — apenas peças com destino certo.</p>
+      </div>
+      <div class="diferencial-card">
+        <div class="diferencial-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <h3 class="diferencial-title">Personalização</h3>
+        <p class="diferencial-text">Cor, textura, dimensão. Adaptamos cada peça ao seu espaço e à sua identidade visual.</p>
+      </div>
+      <div class="diferencial-card">
+        <div class="diferencial-icon" aria-hidden="true">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+        </div>
+        <h3 class="diferencial-title">Design Exclusivo</h3>
+        <p class="diferencial-text">Cada forma é desenvolvida internamente. Você não vai encontrar iguais em nenhum outro lugar.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AMBIENTES -->
+<section class="section-ambientes">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow"><span class="eyebrow-line"></span>Inspiração</div>
+      <h2 class="section-title">Peças <em>em contexto</em></h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="ambientes-grid">
+      <div class="ambiente-item ambiente-large" style="background:#CFC9C1">
+        <div class="ambiente-content">
+          <svg width="80" height="200" viewBox="0 0 80 200" aria-hidden="true">
+            <path d="M28 40 Q20 90 24 150 Q32 185 40 186 Q48 185 56 150 Q60 90 52 40 Z" fill="#A89E92"/>
+            <ellipse cx="40" cy="40" rx="24" ry="6" fill="#BAB2A8"/>
+          </svg>
+        </div>
+        <div class="ambiente-overlay">
+          <span class="ambiente-label">Sala de estar · Minimalista</span>
+        </div>
+      </div>
+      <div class="ambiente-item" style="background:#DDD6CC">
+        <div class="ambiente-content">
+          <svg width="80" height="60" viewBox="0 0 80 60" aria-hidden="true">
+            <rect x="5" y="10" width="70" height="40" rx="2" fill="#A89E92"/>
+            <rect x="0" y="46" width="80" height="10" rx="1" fill="#8A8480"/>
+          </svg>
+        </div>
+        <div class="ambiente-overlay">
+          <span class="ambiente-label">Home office</span>
+        </div>
+      </div>
+      <div class="ambiente-item" style="background:#C8C0B4">
+        <div class="ambiente-content">
+          <svg width="60" height="60" viewBox="0 0 60 60" aria-hidden="true">
+            <circle cx="30" cy="30" r="26" fill="#9A9289"/>
+            <circle cx="22" cy="22" r="7" fill="rgba(255,255,255,0.12)"/>
+          </svg>
+        </div>
+        <div class="ambiente-overlay">
+          <span class="ambiente-label">Varanda gourmet</span>
+        </div>
+      </div>
+      <div class="ambiente-item" style="background:#E0DAD2">
+        <div class="ambiente-content">
+          <svg width="60" height="90" viewBox="0 0 60 90" aria-hidden="true">
+            <rect x="12" y="20" width="36" height="60" rx="2" fill="#A89E92"/>
+            <ellipse cx="30" cy="20" rx="18" ry="5" fill="#BAB2A8"/>
+          </svg>
+        </div>
+        <div class="ambiente-overlay">
+          <span class="ambiente-label">Quarto escandinavo</span>
+        </div>
+      </div>
+      <div class="ambiente-item" style="background:#CECABE">
+        <div class="ambiente-content">
+          <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden="true">
+            <rect x="8" y="8" width="26" height="36" rx="2" fill="#9C9590"/>
+            <ellipse cx="21" cy="8" rx="13" ry="4" fill="#BAB2A8"/>
+            <circle cx="56" cy="34" r="14" fill="#A89E92"/>
+          </svg>
+        </div>
+        <div class="ambiente-overlay">
+          <span class="ambiente-label">Cozinha contemporânea</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEPOIMENTOS -->
+<section class="section-depoimentos">
+  <div class="container">
+    <div class="section-header">
+      <div class="eyebrow"><span class="eyebrow-line"></span>Depoimentos</div>
+      <h2 class="section-title">O que nossos clientes <em>sentem</em></h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="dep-grid">
+      <article class="dep-card">
+        <div class="dep-stars" aria-label="5 estrelas">★★★★★</div>
+        <blockquote class="dep-text">"Recebi o vaso e fiquei sem palavras. A textura, o peso, o acabamento — parece uma obra de arte. Minha sala ganhou outra alma."</blockquote>
+        <footer class="dep-author">
+          <strong>Ana Paula M.</strong>
+          <span>São Paulo · Vaso Bruto N.º 12</span>
+        </footer>
+      </article>
+      <article class="dep-card">
+        <div class="dep-stars" aria-label="5 estrelas">★★★★★</div>
+        <blockquote class="dep-text">"Comprei o kit completo para presentear e a apresentação foi impecável. A pessoa ficou encantada. Qualidade absurda."</blockquote>
+        <footer class="dep-author">
+          <strong>Lucas R.</strong>
+          <span>Belo Horizonte · Kit Decorisa</span>
+        </footer>
+      </article>
+      <article class="dep-card">
+        <div class="dep-stars" aria-label="5 estrelas">★★★★★</div>
+        <blockquote class="dep-text">"Pedi uma bandeja personalizada com as medidas do meu aparador. Ficou perfeita. Atendimento cuidadoso do início ao fim."</blockquote>
+        <footer class="dep-author">
+          <strong>Fernanda C.</strong>
+          <span>Curitiba · Bandeja personalizada</span>
+        </footer>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- BANNER CTA -->
+<section class="section-cta-banner">
+  <div class="cta-banner-inner">
+    <div class="cta-banner-text">
+      <div class="eyebrow eyebrow-light eyebrow-center"><span class="eyebrow-line eyebrow-line-dark"></span>Exclusivo<span class="eyebrow-line eyebrow-line-dark"></span></div>
+      <h2 class="section-title" style="color:#F0EBE3;text-align:center">Sua peça, <em>do seu jeito</em></h2>
+      <p style="color:#8A8478;text-align:center;font-size:14px;max-width:480px;margin:0 auto 32px;line-height:1.7">Produtos personalizados com a sua cor, textura e dimensão. Fale com a gente pelo WhatsApp e vamos criar juntos.</p>
+      <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap">
+        <a href="https://wa.me/5511999999999?text=Olá!%20Gostaria%20de%20fazer%20um%20pedido%20personalizado%20na%20Decorisa" class="btn-primary" target="_blank" rel="noopener">Solicitar personalização</a>
+        <a href="loja.html" class="btn-outline-light">Ver catálogo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-top">
+    <div class="footer-col footer-brand">
+      <a href="index.html" class="logo footer-logo" aria-label="Decorisa Home">
+        <span class="logo-deco">Deco</span><span class="logo-risa">risa</span>
+      </a>
+      <p class="footer-desc">Objetos artesanais em concreto. Design, exclusividade e presença para o seu espaço.</p>
+      <a href="https://wa.me/5511999999999" class="footer-whatsapp" target="_blank" rel="noopener">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+        (11) 99999-9999
+      </a>
+    </div>
+    <div class="footer-col">
+      <h3 class="footer-col-title">Loja</h3>
+      <ul class="footer-links">
+        <li><a href="loja.html">Todos os produtos</a></li>
+        <li><a href="loja.html?cat=vasos">Vasos</a></li>
+        <li><a href="loja.html?cat=bandejas">Bandejas</a></li>
+        <li><a href="loja.html?cat=esferas">Esferas</a></li>
+        <li><a href="loja.html?cat=kits">Kits</a></li>
+        <li><a href="loja.html?cat=personalizados">Personalizados</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h3 class="footer-col-title">Informações</h3>
+      <ul class="footer-links">
+        <li><a href="sobre.html">Sobre a Decorisa</a></li>
+        <li><a href="sobre.html#processo">Processo artesanal</a></li>
+        <li><a href="contato.html">Contato</a></li>
+        <li><a href="contato.html#faq">FAQ</a></li>
+        <li><a href="politica.html">Política de troca</a></li>
+        <li><a href="privacidade.html">Privacidade</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h3 class="footer-col-title">Newsletter</h3>
+      <p class="footer-newsletter-text">Lançamentos e novidades direto no seu e-mail.</p>
+      <form class="newsletter-form" onsubmit="subscribeNewsletter(event)">
+        <label for="newsletterEmail" class="sr-only">Seu e-mail</label>
+        <div class="newsletter-row">
+          <input type="email" id="newsletterEmail" placeholder="seu@email.com" required>
+          <button type="submit" aria-label="Assinar newsletter">→</button>
+        </div>
+        <p class="newsletter-msg" id="newsletterMsg"></p>
+      </form>
+      <div class="footer-social">
+        <a href="https://instagram.com/decorisa" target="_blank" rel="noopener" aria-label="Instagram da Decorisa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        </a>
+        <a href="https://pinterest.com/decorisa" target="_blank" rel="noopener" aria-label="Pinterest da Decorisa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.65 7.86 6.39 9.29-.09-.78-.17-1.98.04-2.83.18-.76 1.22-5.15 1.22-5.15s-.31-.62-.31-1.54c0-1.45.84-2.53 1.88-2.53.89 0 1.32.67 1.32 1.47 0 .9-.57 2.24-.87 3.48-.25 1.04.52 1.88 1.54 1.88 1.85 0 3.27-1.95 3.27-4.76 0-2.49-1.79-4.23-4.35-4.23-2.96 0-4.7 2.22-4.7 4.51 0 .89.34 1.85.77 2.37.08.1.09.19.07.29-.08.32-.25 1.04-.28 1.18-.04.19-.14.23-.32.14-1.25-.58-2.03-2.42-2.03-3.89 0-3.15 2.29-6.05 6.61-6.05 3.47 0 6.16 2.47 6.16 5.77 0 3.45-2.17 6.22-5.19 6.22-1.01 0-1.97-.53-2.3-1.15l-.62 2.33c-.23.87-.84 1.96-1.25 2.62.94.29 1.94.45 2.97.45 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
+        </a>
+        <a href="https://tiktok.com/@decorisa" target="_blank" rel="noopener" aria-label="TikTok da Decorisa">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 Decorisa. Todos os direitos reservados.</p>
+    <div class="footer-payment" aria-label="Formas de pagamento">
+      <span>Pix</span>
+      <span>Cartão</span>
+      <span>Boleto</span>
+    </div>
+  </div>
+</footer>
+
+<!-- TOAST NOTIFICATION -->
+<div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+<!-- WHATSAPP FLOAT -->
+<a href="https://wa.me/5511999999999?text=Olá!%20Tenho%20interesse%20nos%20produtos%20da%20Decorisa!" 
+   class="whatsapp-float" 
+   target="_blank" 
+   rel="noopener"
+   aria-label="Falar no WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script src="app.js"></script>
+</body>
+</html>
