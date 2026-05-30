@@ -430,7 +430,7 @@ function renderProductCard(p) {
         <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:24px">${p.svg}</div>
         <div class="product-quick-add">
           <button class="btn-primary" style="font-size:10px;padding:10px 20px"
-            onclick="event.stopPropagation();${p.id === 8 ? "window.open('https://wa.me/5511999999999?text=Quero+uma+peça+personalizada!','_blank')" : `addToCart(${p.id})`}">
+            onclick="event.stopPropagation();${p.id === 8 ? "window.open('https://wa.me/5554999005435?text=Quero+uma+peça+personalizada!','_blank')" : `addToCart(${p.id})`}">
             ${p.id === 8 ? 'Solicitar' : 'Adicionar'}
           </button>
         </div>
@@ -511,7 +511,7 @@ function buildProdutoHTML(p) {
        </div>`;
 
   const addBtn = p.id === 8
-    ? `<a href="https://wa.me/5511999999999?text=Quero+uma+peça+personalizada!" target="_blank" class="btn-primary btn-comprar" style="display:flex;align-items:center;justify-content:center;gap:8px">Solicitar pelo WhatsApp</a>`
+    ? `<a href="https://wa.me/5554999005435?text=Quero+uma+peça+personalizada!" target="_blank" class="btn-primary btn-comprar" style="display:flex;align-items:center;justify-content:center;gap:8px">Solicitar pelo WhatsApp</a>`
     : `<button class="btn-primary btn-comprar" onclick="addToCart(${p.id}, document.getElementById('prodQty').valueAsNumber||1, selectedColor, selectedSize)">Adicionar ao carrinho</button>`;
 
   return `

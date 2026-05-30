@@ -112,8 +112,7 @@ Abra: `http://localhost:3000`
 
 Em `app.js`, altere:
 ```js
-// WhatsApp — substitua pelo número real
-https://wa.me/5511999999999
+https://wa.me/5554999005435
 
 // Cupons — adicione seus próprios
 const COUPONS = {
