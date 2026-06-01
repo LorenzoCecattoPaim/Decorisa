@@ -1,228 +1,219 @@
-# Decorisa — E-commerce Premium Artesanal
+# Decorisa — E-commerce Premium de Decoração Artesanal
 
-> Código front-end completo, pronto para produção.  
-> HTML5 · CSS3 · JavaScript puro · Zero dependências externas.
+> Design contemporâneo, artesanato em concreto, produção sob demanda.
 
 ---
 
-## Estrutura de arquivos
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Linguagem | TypeScript |
+| Estilo | TailwindCSS + design tokens customizados |
+| Animações | Framer Motion |
+| Banco de dados | PostgreSQL via Supabase ou Railway |
+| ORM | Prisma |
+| Autenticação | NextAuth.js (Credentials + Google) |
+| Estado do carrinho | Zustand (persistido em localStorage) |
+| Pagamentos | Stripe · Mercado Pago · Pix |
+| E-mail | Nodemailer (SMTP) |
+| Tipografia | Cormorant Garamond (serif) + Jost (sans) |
+
+---
+
+## Estrutura do Projeto
 
 ```
 decorisa/
-├── index.html        → Homepage completa
-├── loja.html         → Catálogo / loja com filtros
-├── produto.html      → Página de produto individual
-├── sobre.html        → Sobre a marca
-├── contato.html      → Contato + FAQ
-├── checkout.html     → Finalização de pedido
-├── cliente.html      → Área do cliente (login + painel)
-├── admin.html        → Painel administrativo
-├── style.css         → CSS completo (todas as páginas)
-├── app.js            → JavaScript (carrinho, produtos, animações)
-└── favicon.svg       → Ícone da aba do navegador
+├── prisma/
+│   ├── schema.prisma          # Modelos completos do banco
+│   └── seed.ts                # Dados iniciais (produtos, categorias, cupons)
+├── src/
+│   ├── app/
+│   │   ├── page.tsx           # Homepage
+│   │   ├── loja/              # Catálogo com filtros
+│   │   ├── produto/[slug]/    # Página de produto
+│   │   ├── sobre/             # Página sobre
+│   │   ├── contato/           # Formulário de contato
+│   │   ├── carrinho/          # Página do carrinho
+│   │   ├── checkout/          # Checkout completo
+│   │   ├── cliente/           # Área do cliente
+│   │   ├── admin/             # Painel administrativo
+│   │   ├── login/             # Login
+│   │   ├── cadastro/          # Cadastro
+│   │   └── api/               # API routes
+│   │       ├── auth/          # NextAuth + registro
+│   │       ├── produtos/      # CRUD produtos
+│   │       ├── pedidos/       # Criação e listagem de pedidos
+│   │       ├── cupons/        # Validação de cupons
+│   │       └── contato/       # Envio de e-mail
+│   ├── components/
+│   │   ├── layout/            # Header, Footer
+│   │   ├── shop/              # Hero, ProductCard, seções da home
+│   │   └── cart/              # CartDrawer
+│   ├── context/
+│   │   └── cart-store.ts      # Zustand store do carrinho
+│   ├── animations/
+│   │   └── variants.ts        # Framer Motion variants
+│   ├── lib/
+│   │   ├── prisma.ts          # Singleton Prisma client
+│   │   └── auth.ts            # NextAuth options
+│   ├── types/
+│   │   └── index.ts           # Tipos TypeScript
+│   ├── utils/
+│   │   └── index.ts           # Formatadores e helpers
+│   └── styles/
+│       └── globals.css        # Design system + tokens
+├── .env.example               # Template de variáveis
+├── next.config.ts
+├── tailwind.config.ts
+└── tsconfig.json
 ```
 
 ---
 
-## Funcionalidades incluídas
+## Instalação
 
-### Loja
-- 8 produtos com SVG artesanal (sem imagens externas necessárias)
-- Filtros por categoria: Vasos, Bandejas, Esferas, Kits, Personalizados
-- Ordenação por preço e nome
-- Cards com hover elegante e quick-add
+### Pré-requisitos
 
-### Carrinho
-- Drawer lateral com animação suave
-- Adicionar / remover / alterar quantidade
-- Cálculo de frete por CEP (simulado)
-- Cupons de desconto: `DECORISA10`, `DECORISA15`, `BEMVINDO`
-- Subtotal, desconto e total atualizados em tempo real
-- Persistência via `localStorage`
+- Node.js 18+
+- PostgreSQL (Supabase, Railway, Neon ou local)
 
-### Produto
-- Galeria com thumbnails
-- Seletor de cor e tamanho
-- Controle de quantidade
-- Botão WhatsApp direto
-- Cálculo de frete individual
-- Produtos relacionados
-- Seção de avaliações
-
-### Checkout
-- Formulário completo de endereço
-- Integração com ViaCEP (preenchimento automático)
-- 4 formas de pagamento: Pix, Cartão, Boleto, Mercado Pago
-- Confirmação de pedido com número gerado
-- Limpeza automática do carrinho após confirmação
-
-### Área do cliente
-- Login / Registro (demo, conectar ao backend)
-- Histórico de pedidos com status
-- Favoritos
-- Endereços salvos
-- Edição de perfil e senha
-
-### Admin
-- Dashboard com métricas e gráfico de barras
-- Gestão de pedidos com filtros e atualização de status
-- Listagem de produtos com edição
-- Cadastro de novo produto com upload de fotos
-- Lista de clientes
-- Cupons (criar, ativar, desativar)
-- Banners (editar textos do hero)
-- Alertas de estoque baixo
-
----
-
-## Como usar
-
-### 1. Hospedagem estática (mais simples)
-
-Faça upload de **todos os arquivos** para qualquer serviço:
-
-| Serviço       | Como fazer |
-|---------------|-----------|
-| **Vercel**    | Arraste a pasta ou use `vercel deploy` |
-| **Netlify**   | Arraste a pasta no app.netlify.com |
-| **GitHub Pages** | Suba para um repositório, ative Pages |
-| **Hostinger** | Upload via FTP na pasta `public_html` |
-| **cPanel**    | Upload via Gerenciador de Arquivos |
-
-### 2. Servidor local (desenvolvimento)
+### 1. Clone e instale
 
 ```bash
-# Com Python 3
-python -m http.server 3000
-
-# Com Node.js (npx)
-npx serve .
-
-# Com VS Code
-# Instalar extensão "Live Server" e clicar em "Go Live"
+git clone https://github.com/sua-org/decorisa.git
+cd decorisa
+npm install
 ```
 
-Abra: `http://localhost:3000`
+### 2. Configure as variáveis de ambiente
 
----
-
-## Personalização
-
-### Trocar nome e dados da marca
-
-Em `app.js`, altere:
-```js
-https://wa.me/5554999005435
-
-// Cupons — adicione seus próprios
-const COUPONS = {
-  'SEUCUPOM': { discount: 0.10, label: '10% de desconto' }
-};
+```bash
+cp .env.example .env.local
+# Edite .env.local com suas credenciais
 ```
 
-Em todos os `.html`, pesquise e substitua:
-- `(11) 99999-9999` → seu número
-- `contato@decorisa.com.br` → seu e-mail
-- `instagram.com/decorisa` → seu Instagram
+### 3. Configure o banco de dados
 
-### Adicionar produtos reais
+```bash
+# Gerar o Prisma Client
+npm run prisma:generate
 
-Em `app.js`, no array `PRODUCTS`, adicione ou edite objetos:
-```js
-{
-  id: 9,
-  name: 'Meu Novo Produto',
-  material: 'Concreto · Artesanal',
-  price: 199.00,
-  pricePix: 189.00,
-  category: 'vasos',          // vasos | bandejas | esferas | kits | personalizados
-  badge: 'Novo',              // ou null
-  sku: 'DEC-XX-009',
-  desc: 'Descrição emocional...',
-  specs: { Dimensões: '10 × 20 cm', Peso: '1,2 kg' },
-  colors: ['#C4BEB6', '#8A8480'],
-  sizes: ['P', 'M', 'G'],
-  stock: 5,
-  svg: `<svg>...</svg>`       // substitua por <img src="foto.jpg"> se preferir
-}
+# Criar as tabelas
+npm run prisma:migrate
+
+# Popular com dados iniciais
+npm run prisma:seed
 ```
 
-### Usar fotos reais
+### 4. Inicie o servidor
 
-Substitua o campo `svg` por:
-```js
-svg: `<img src="fotos/vaso-bruto.jpg" alt="Vaso Bruto" style="width:100%;height:100%;object-fit:cover">`
-```
-
-Coloque as fotos em uma pasta `/fotos/` dentro do projeto.
-
-### Cores e tipografia
-
-Em `style.css`, altere as variáveis CSS:
-```css
-:root {
-  --color-bg: #F9F7F4;        /* fundo geral */
-  --color-bg-dark: #2C2A26;   /* fundo escuro */
-  --color-concrete: #A89E92;  /* cor de destaque */
-  --font-display: 'Cormorant Garamond', serif;
-  --font-body: 'Jost', sans-serif;
-}
+```bash
+npm run dev
+# Acesse http://localhost:3000
 ```
 
 ---
 
-## Integração com pagamentos
+## Credenciais padrão (seed)
 
-Para pagamentos reais, integre no `checkout.html`:
+| Tipo | E-mail | Senha |
+|---|---|---|
+| Admin | admin@decorisa.com.br | admin123 |
 
-### Mercado Pago (mais usado no Brasil)
-```html
-<script src="https://sdk.mercadopago.com/js/v2"></script>
-```
-→ Crie preferência de pagamento no backend e redirecione.
-
-### Stripe
-```html
-<script src="https://js.stripe.com/v3/"></script>
-```
-→ Use `stripe.redirectToCheckout()` com o session ID do backend.
-
-### PagSeguro / PayPal
-→ Geram link de pagamento via API no backend.
+Acesse o painel em `/admin`.
 
 ---
 
-## Backend recomendado
+## Deploy em Produção
 
-Para loja completa em produção, recomendo:
+### Vercel (recomendado)
 
-| Necessidade | Solução sugerida |
-|------------|-----------------|
-| Banco de dados | Supabase (PostgreSQL grátis) |
-| Autenticação | Supabase Auth |
-| Pagamentos | Mercado Pago API |
-| E-mails | Resend ou SendGrid |
-| Imagens | Cloudinary |
-| CMS | Sanity.io ou Strapi |
-| Deploy API | Vercel Functions ou Railway |
+```bash
+# Instale a CLI
+npm i -g vercel
 
----
+# Deploy
+vercel
 
-## SEO — ajustes recomendados
-
-Em cada `.html`, personalize:
-```html
-<meta name="description" content="Sua descrição única...">
-<meta property="og:title" content="Título da página">
-<meta property="og:image" content="URL da imagem de compartilhamento">
+# Configure as variáveis de ambiente no dashboard Vercel
 ```
 
+### Railway (banco de dados)
+
+1. Crie um projeto no [Railway](https://railway.app)
+2. Adicione um serviço PostgreSQL
+3. Copie a `DATABASE_URL` para suas variáveis de ambiente
+
+### Supabase (alternativa + storage)
+
+1. Crie um projeto em [supabase.com](https://supabase.com)
+2. Use a connection string como `DATABASE_URL`
+3. Configure um bucket `produtos` para imagens
+
 ---
 
-## Suporte
+## Funcionalidades Implementadas
 
-Dúvidas sobre personalização? Entre em contato pelo WhatsApp ou e-mail cadastrado.
+### Loja
+- [x] Homepage com hero, produtos em destaque, sobre, processo, diferenciais, depoimentos, newsletter
+- [x] Catálogo com filtros por categoria, busca e ordenação
+- [x] Página de produto com galeria, variantes, quantidade, WhatsApp
+- [x] Cart drawer animado (Framer Motion)
+- [x] Página do carrinho com cupom de desconto
+- [x] Checkout completo com Pix, Cartão e Boleto
+
+### Cliente
+- [x] Login com credenciais e Google OAuth
+- [x] Cadastro de conta
+- [x] Área do cliente: pedidos, favoritos, endereços, perfil
+
+### Admin
+- [x] Dashboard com métricas, pedidos recentes, top produtos
+- [x] Navegação para pedidos, produtos, clientes, banners, cupons
+
+### Backend
+- [x] API de produtos (GET + POST com auth)
+- [x] API de pedidos (GET + POST com criação automática de endereço)
+- [x] Validação de cupons
+- [x] Envio de e-mail via SMTP
+- [x] Autenticação NextAuth com Prisma adapter
+- [x] Schema completo do banco com todos os relacionamentos
+
+### UX/UI
+- [x] Animações Framer Motion (fadeUp, stagger, imageReveal, drawerSlide)
+- [x] Design tokens Decorisa (paleta, tipografia, espaçamento)
+- [x] Responsivo (mobile-first)
+- [x] Skeleton loading
+- [x] Toast notifications
+- [x] SEO (metadata, Open Graph, sitemap ready)
 
 ---
 
-**Decorisa** — Feito com cuidado, pensado com intenção.
+## Paleta de Cores
+
+```
+--cream:    #FAF8F4  (fundo principal)
+--offwhite: #F5F2EC  (cards, seções alternadas)
+--sand:     #E8E0D0  (bordas, separadores)
+--stone:    #C8BFB0  (elementos secundários)
+--cement:   #9E9589  (textos de apoio)
+--warm:     #6B5E4E  (parágrafos)
+--charcoal: #3D3830  (títulos secundários)
+--ink:      #1A1714  (cor principal)
+--accent:   #8B7355  (cor de destaque / brand)
+```
+
+---
+
+## Cupom de Teste
+
+Use o cupom **BEMVINDO10** para 10% de desconto no checkout.
+
+---
+
+## Licença
+
+Projeto desenvolvido exclusivamente para a marca **Decorisa**.

@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" fill="#F9F7F4"/>
-  <!-- Vaso minimalista -->
-  <ellipse cx="32" cy="18" rx="13" ry="3.5" fill="#A89E92"/>
-  <path d="M19 18 Q16 35 18 48 Q23 58 32 58 Q41 58 46 48 Q48 35 45 18 Z" fill="#A89E92"/>
-  <line x1="28" y1="22" x2="27" y2="52" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
-</svg>

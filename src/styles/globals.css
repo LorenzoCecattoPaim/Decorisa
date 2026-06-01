@@ -1,0 +1,136 @@
+/* src/styles/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=Jost:wght@200;300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --cream: #FAF8F4;
+    --offwhite: #F5F2EC;
+    --sand: #E8E0D0;
+    --stone: #C8BFB0;
+    --cement: #9E9589;
+    --warm: #6B5E4E;
+    --charcoal: #3D3830;
+    --ink: #1A1714;
+    --accent: #8B7355;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    @apply font-sans font-light text-ink bg-cream;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4 { @apply font-serif font-light; }
+
+  ::selection {
+    background: rgba(139, 115, 85, 0.2);
+    color: var(--ink);
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--stone); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--cement); }
+}
+
+@layer components {
+  /* BUTTONS */
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-11 py-4 bg-ink text-cream text-[11px] tracking-[0.22em] uppercase font-sans font-normal transition-all duration-300;
+  }
+  .btn-primary:hover { @apply bg-accent; }
+  .btn-primary:active { @apply scale-[0.98]; }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center px-11 py-4 bg-transparent text-ink text-[11px] tracking-[0.22em] uppercase border border-ink font-sans font-normal transition-all duration-300;
+  }
+  .btn-outline:hover { @apply bg-ink text-cream; }
+
+  .btn-accent {
+    @apply inline-flex items-center justify-center px-8 py-3 bg-accent text-cream text-[11px] tracking-[0.2em] uppercase font-sans font-normal transition-all duration-300;
+  }
+  .btn-accent:hover { @apply bg-warm; }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 text-[11px] tracking-[0.2em] uppercase text-cement font-sans font-normal transition-colors duration-300;
+  }
+  .btn-ghost:hover { @apply text-ink; }
+
+  /* LABELS */
+  .label-eyebrow {
+    @apply text-[10px] tracking-[0.35em] uppercase text-cement font-normal;
+  }
+
+  /* SECTION TITLES */
+  .section-title {
+    @apply font-serif text-display-md font-light text-ink leading-[1.1];
+  }
+  .section-title em { @apply italic text-accent not-italic; }
+
+  /* CARDS */
+  .product-card {
+    @apply bg-offwhite overflow-hidden cursor-pointer group transition-all duration-600;
+  }
+
+  .product-card:hover .product-image {
+    @apply scale-[1.04];
+  }
+
+  /* FORM */
+  .form-label {
+    @apply block text-[10px] tracking-[0.2em] uppercase text-cement mb-2 font-normal;
+  }
+
+  .form-input {
+    @apply w-full px-4 py-3.5 bg-offwhite border border-sand text-ink font-sans text-sm outline-none transition-colors duration-300 font-light;
+  }
+  .form-input:focus { @apply border-accent; }
+  .form-input::placeholder { @apply text-stone; }
+
+  textarea.form-input { @apply resize-y min-h-[120px]; }
+
+  /* BADGE */
+  .badge {
+    @apply inline-block px-3 py-1 text-[10px] tracking-[0.15em] uppercase;
+  }
+  .badge-pending { @apply bg-amber-50 text-amber-800; }
+  .badge-confirmed { @apply bg-blue-50 text-blue-800; }
+  .badge-production { @apply bg-orange-50 text-orange-800; }
+  .badge-shipped { @apply bg-sky-50 text-sky-800; }
+  .badge-delivered { @apply bg-green-50 text-green-700; }
+  .badge-cancelled { @apply bg-red-50 text-red-700; }
+
+  /* DIVIDER */
+  .divider {
+    @apply border-t border-sand;
+  }
+
+  /* SKELETON */
+  .skeleton {
+    @apply bg-sand relative overflow-hidden;
+  }
+  .skeleton::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer;
+  }
+
+  /* SECTION PADDING */
+  .section-pad { @apply px-8 md:px-15 lg:px-[60px] py-16 md:py-20 lg:py-24; }
+  .section-pad-sm { @apply px-8 md:px-15 lg:px-[60px] py-10 md:py-14 lg:py-16; }
+
+  /* NAV HEIGHT */
+  .nav-offset { @apply pt-20; }
+}
+
+@layer utilities {
+  .text-balance { text-wrap: balance; }
+  .font-display { font-family: 'Cormorant Garamond', serif; font-style: italic; }
+  .tracking-luxury { letter-spacing: 0.3em; }
+  .bg-noise { background-image: var(--tw-bg-noise); }
+}
