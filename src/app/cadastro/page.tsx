@@ -1,6 +1,6 @@
 'use client'
 // src/app/cadastro/page.tsx
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -12,7 +12,7 @@ export default function CadastroPage() {
   const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '' })
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (form.password !== form.confirmPassword) {
       toast.error('As senhas não coincidem')
@@ -57,7 +57,7 @@ export default function CadastroPage() {
           </div>
           <div>
             <label className="form-label">Senha</label>
-            <input type="password" required minLength={6} className="form-input" placeholder="Mínimo 6 caracteres" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            <input type="password" required minLength={8} className="form-input" placeholder="Minimo 8 caracteres" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
           </div>
           <div>
             <label className="form-label">Confirmar Senha</label>

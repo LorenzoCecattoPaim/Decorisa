@@ -1,6 +1,6 @@
 'use client'
 // src/app/checkout/CheckoutForm.tsx
-import { useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
@@ -14,7 +14,7 @@ type PayMethod = 'PIX' | 'CREDIT_CARD' | 'BOLETO'
 
 export default function CheckoutForm() {
   const router = useRouter()
-  const { items, subtotal, discount, total, clearCart } = useCartStore()
+  const { items, coupon, subtotal, discount, total, clearCart } = useCartStore()
   const [step, setStep] = useState<'address' | 'payment'>('address')
   const [loading, setLoading] = useState(false)
   const [payMethod, setPayMethod] = useState<PayMethod>('PIX')
@@ -28,7 +28,11 @@ export default function CheckoutForm() {
   const pixDiscount = payMethod === 'PIX' ? subtotal * 0.05 : 0
   const finalTotal = total + shipping - pixDiscount
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (items.length === 0) router.replace('/loja')
+  }, [items.length, router])
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     if (step === 'address') { setStep('payment'); return }
 
@@ -47,6 +51,8 @@ export default function CheckoutForm() {
           address,
           paymentMethod: payMethod,
           shippingCost: shipping,
+          couponId: coupon?.id ?? null,
+          paymentDiscount: pixDiscount,
         }),
       })
       const data = await res.json()
@@ -64,7 +70,6 @@ export default function CheckoutForm() {
   }
 
   if (items.length === 0) {
-    router.push('/loja')
     return null
   }
 

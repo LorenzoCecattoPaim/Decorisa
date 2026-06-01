@@ -11,7 +11,7 @@ interface Props {
 }
 
 async function getProduct(slug: string) {
-  return prisma.product.findUnique({
+  return prisma.product.findFirst({
     where: { slug, active: true },
     include: {
       category: true,

@@ -1,5 +1,5 @@
 // src/types/index.ts
-export type { User, Product, Category, Order, OrderItem, Address, Review, Coupon, Banner, Cart, CartItem, Variant } from '@prisma/client'
+export type { User, Product, Category, Order, OrderItem, Review, Coupon, Banner, Cart, CartItem, Variant } from '@prisma/client'
 
 export interface ProductWithRelations {
   id: string

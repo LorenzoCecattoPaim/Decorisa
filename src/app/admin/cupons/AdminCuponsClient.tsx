@@ -1,6 +1,6 @@
 'use client'
 // src/app/admin/cupons/AdminCuponsClient.tsx
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { formatDate } from '@/utils'
 import { cn } from '@/utils'
@@ -17,7 +17,7 @@ export default function AdminCuponsClient({ cupons: initial }: { cupons: Coupon[
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState({ code: '', description: '', type: 'PERCENTAGE', value: '', usageLimit: '', expiresAt: '' })
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
     const res = await fetch('/api/cupons', {
       method: 'POST',

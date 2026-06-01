@@ -1,6 +1,6 @@
 'use client'
 // src/app/admin/produtos/AdminProductsClient.tsx
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import Image from 'next/image'
 import { Plus, Pencil, Trash2, Eye, EyeOff } from 'lucide-react'
 import { formatPrice } from '@/utils'
@@ -9,7 +9,7 @@ import toast from 'react-hot-toast'
 
 interface Product {
   id: string; name: string; slug: string; price: number; comparePrice?: number | null
-  stock: number; featured: boolean; active: boolean; category: { name: string }
+  stock: number; featured: boolean; active: boolean; categoryId: string; category: { id: string; name: string }
   images: { url: string }[]
 }
 
@@ -47,13 +47,13 @@ export default function AdminProductsClient({
     setForm({
       name: p.name, description: '', shortDesc: '', price: String(p.price),
       comparePrice: p.comparePrice ? String(p.comparePrice) : '',
-      stock: String(p.stock), categoryId: '', featured: p.featured,
+      stock: String(p.stock), categoryId: p.categoryId, featured: p.featured,
       productionDays: '10', weight: '', materials: '', finishes: '',
     })
     setShowForm(true)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     const payload = {
       ...form,

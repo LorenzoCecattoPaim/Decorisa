@@ -3,10 +3,12 @@ import type { Metadata } from 'next'
 import HeroSection from '@/components/shop/HeroSection'
 import FeaturedProducts from '@/components/shop/FeaturedProducts'
 import AboutBand from '@/components/shop/AboutBand'
-import ProcessSection from '@/components/shop/ProcessSection'
-import DifferentialsSection from '@/components/shop/DifferentialsSection'
-import TestimonialsSection from '@/components/shop/TestimonialsSection'
-import NewsletterSection from '@/components/shop/NewsletterSection'
+import {
+  ProcessSection,
+  DifferentialsSection,
+  TestimonialsSection,
+  NewsletterSection,
+} from '@/components/shop/sections'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { prisma } from '@/lib/prisma'

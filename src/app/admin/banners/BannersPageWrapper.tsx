@@ -1,6 +1,6 @@
 'use client'
 // src/app/admin/banners/BannersPageWrapper.tsx
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import AdminShell from '@/components/admin/AdminShell'
 import { formatDate } from '@/utils'
 import { Plus, Trash2, ToggleLeft, ToggleRight } from 'lucide-react'
@@ -21,7 +21,7 @@ export default function BannersPageWrapper() {
     fetch('/api/banners').then((r) => r.json()).then((d) => { if (d.success) setBanners(d.data) }).finally(() => setLoading(false))
   }, [])
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = async (e: FormEvent) => {
     e.preventDefault()
     const res = await fetch('/api/banners', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) })
     const data = await res.json()

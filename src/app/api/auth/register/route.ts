@@ -5,19 +5,30 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST(req: NextRequest) {
   const { name, email, password } = await req.json()
+  const normalizedName = String(name ?? '').trim()
+  const normalizedEmail = String(email ?? '').toLowerCase().trim()
+  const rawPassword = String(password ?? '')
 
-  if (!name || !email || !password) {
-    return NextResponse.json({ success: false, error: 'Campos obrigatórios faltando' }, { status: 400 })
+  if (!normalizedName || !normalizedEmail || !rawPassword) {
+    return NextResponse.json({ success: false, error: 'Campos obrigatorios faltando' }, { status: 400 })
   }
 
-  const existing = await prisma.user.findUnique({ where: { email } })
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+    return NextResponse.json({ success: false, error: 'E-mail invalido' }, { status: 400 })
+  }
+
+  if (rawPassword.length < 8) {
+    return NextResponse.json({ success: false, error: 'A senha deve ter no minimo 8 caracteres' }, { status: 400 })
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } })
   if (existing) {
-    return NextResponse.json({ success: false, error: 'E-mail já cadastrado' }, { status: 409 })
+    return NextResponse.json({ success: false, error: 'E-mail ja cadastrado' }, { status: 409 })
   }
 
-  const hashed = await bcrypt.hash(password, 12)
+  const hashed = await bcrypt.hash(rawPassword, 12)
   const user = await prisma.user.create({
-    data: { name, email, password: hashed },
+    data: { name: normalizedName, email: normalizedEmail, password: hashed },
     select: { id: true, name: true, email: true },
   })
 

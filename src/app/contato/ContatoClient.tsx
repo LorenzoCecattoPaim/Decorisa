@@ -1,6 +1,6 @@
 'use client'
 // src/app/contato/ContatoClient.tsx
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { motion } from 'framer-motion'
 import { MessageCircle, Mail, MapPin, Clock, Send } from 'lucide-react'
 import { fadeUp, slideRight, slideLeft } from '@/animations/variants'
@@ -10,7 +10,7 @@ export default function ContatoClient() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {

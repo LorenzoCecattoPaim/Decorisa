@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion } from 'framer-motion'
 import { Heart } from 'lucide-react'
-import { useState } from 'react'
+import { useState, type MouseEvent } from 'react'
 import { ProductWithRelations } from '@/types'
 import { formatPrice, getAverageRating } from '@/utils'
 import { useCartStore } from '@/context/cart-store'
@@ -28,7 +28,7 @@ export default function ProductCard({ product, priority = false }: ProductCardPr
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
     : null
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     addItem({
