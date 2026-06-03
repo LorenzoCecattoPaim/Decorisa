@@ -1,219 +1,240 @@
-# Decorisa — E-commerce Premium de Decoração Artesanal
+# Decorisa — E-commerce Full Stack
 
-> Design contemporâneo, artesanato em concreto, produção sob demanda.
-
----
-
-## Stack
-
-| Camada | Tecnologia |
-|---|---|
-| Framework | Next.js 14 (App Router) |
-| Linguagem | TypeScript |
-| Estilo | TailwindCSS + design tokens customizados |
-| Animações | Framer Motion |
-| Banco de dados | PostgreSQL via Supabase ou Railway |
-| ORM | Prisma |
-| Autenticação | NextAuth.js (Credentials + Google) |
-| Estado do carrinho | Zustand (persistido em localStorage) |
-| Pagamentos | Stripe · Mercado Pago · Pix |
-| E-mail | Nodemailer (SMTP) |
-| Tipografia | Cormorant Garamond (serif) + Jost (sans) |
+> **Frontend:** HTML + CSS + JS puro · **Backend:** Node.js + Express · **Banco:** Supabase (PostgreSQL) · **Deploy:** Render (API) + Netlify/Vercel (Frontend)
 
 ---
 
-## Estrutura do Projeto
+## Estrutura do projeto
 
 ```
 decorisa/
-├── prisma/
-│   ├── schema.prisma          # Modelos completos do banco
-│   └── seed.ts                # Dados iniciais (produtos, categorias, cupons)
-├── src/
-│   ├── app/
-│   │   ├── page.tsx           # Homepage
-│   │   ├── loja/              # Catálogo com filtros
-│   │   ├── produto/[slug]/    # Página de produto
-│   │   ├── sobre/             # Página sobre
-│   │   ├── contato/           # Formulário de contato
-│   │   ├── carrinho/          # Página do carrinho
-│   │   ├── checkout/          # Checkout completo
-│   │   ├── cliente/           # Área do cliente
-│   │   ├── admin/             # Painel administrativo
-│   │   ├── login/             # Login
-│   │   ├── cadastro/          # Cadastro
-│   │   └── api/               # API routes
-│   │       ├── auth/          # NextAuth + registro
-│   │       ├── produtos/      # CRUD produtos
-│   │       ├── pedidos/       # Criação e listagem de pedidos
-│   │       ├── cupons/        # Validação de cupons
-│   │       └── contato/       # Envio de e-mail
-│   ├── components/
-│   │   ├── layout/            # Header, Footer
-│   │   ├── shop/              # Hero, ProductCard, seções da home
-│   │   └── cart/              # CartDrawer
-│   ├── context/
-│   │   └── cart-store.ts      # Zustand store do carrinho
-│   ├── animations/
-│   │   └── variants.ts        # Framer Motion variants
-│   ├── lib/
-│   │   ├── prisma.ts          # Singleton Prisma client
-│   │   └── auth.ts            # NextAuth options
-│   ├── types/
-│   │   └── index.ts           # Tipos TypeScript
-│   ├── utils/
-│   │   └── index.ts           # Formatadores e helpers
-│   └── styles/
-│       └── globals.css        # Design system + tokens
-├── .env.example               # Template de variáveis
-├── next.config.ts
-├── tailwind.config.ts
-└── tsconfig.json
+├── backend/
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── supabase.js       # Cliente Supabase
+│   │   │   ├── migrate.js        # Schema SQL (cole no Supabase)
+│   │   │   └── seed.js           # Dados iniciais
+│   │   ├── middleware/
+│   │   │   ├── auth.js           # JWT + proteção de rotas
+│   │   │   └── validate.js       # Validação + error handler
+│   │   ├── routes/
+│   │   │   ├── auth.js           # Login, registro, perfil
+│   │   │   ├── products.js       # CRUD de produtos
+│   │   │   ├── orders.js         # Criação e gestão de pedidos
+│   │   │   ├── contact.js        # Formulário de contato
+│   │   │   └── extra.js          # Cupons, endereços, admin, pagamento
+│   │   ├── utils/
+│   │   │   ├── mailer.js         # E-mails transacionais
+│   │   │   └── helpers.js        # Utilitários (frete, preços)
+│   │   └── server.js             # Entry point
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── package.json
+│   └── render.yaml               # Deploy no Render
+│
+└── frontend/
+    ├── index.html                 # Homepage
+    ├── css/
+    │   └── style.css             # CSS completo
+    ├── js/
+    │   ├── api.js                # Cliente HTTP (todas as chamadas à API)
+    │   ├── cart.js               # Carrinho (localStorage + UI)
+    │   └── main.js               # Header, toast, reveal, utilitários
+    ├── assets/
+    │   └── svg/favicon.svg
+    └── pages/
+        ├── loja.html             # Catálogo com filtros e paginação
+        ├── produto.html          # Página de produto dinâmica
+        ├── checkout.html         # Checkout em 3 passos
+        ├── cliente.html          # Login + Área do cliente
+        ├── admin.html            # Painel administrativo
+        ├── sobre.html            # Sobre a marca
+        └── contato.html          # Contato + FAQ
 ```
 
 ---
 
-## Instalação
+## 1. Supabase — banco de dados
 
-### Pré-requisitos
+### 1.1 Criar projeto
+1. Acesse [supabase.com](https://supabase.com) → **New project**
+2. Escolha região **South America (São Paulo)**
+3. Salve a senha do banco
 
-- Node.js 18+
-- PostgreSQL (Supabase, Railway, Neon ou local)
+### 1.2 Criar as tabelas
+1. No painel do Supabase → **SQL Editor** → **New query**
+2. Execute o conteúdo de `backend/src/config/migrate.js` (copie o SQL da variável `SQL`)
+3. Clique em **Run**
 
-### 1. Clone e instale
+### 1.3 Obter as chaves
+Em **Project Settings → API**:
+- `SUPABASE_URL` → Project URL
+- `SUPABASE_ANON_KEY` → anon/public
+- `SUPABASE_SERVICE_ROLE_KEY` → service_role (**nunca exponha no frontend**)
 
+---
+
+## 2. Backend — Render
+
+### 2.1 Preparar repositório
 ```bash
-git clone https://github.com/sua-org/decorisa.git
-cd decorisa
+cd backend
+git init
+git add .
+git commit -m "Decorisa API v1"
+# Crie um repositório privado no GitHub e faça push
+git remote add origin https://github.com/SEU_USUARIO/decorisa-api.git
+git push -u origin main
+```
+
+### 2.2 Deploy no Render
+1. Acesse [render.com](https://render.com) → **New Web Service**
+2. Conecte o repositório GitHub `decorisa-api`
+3. Configure:
+   - **Runtime:** Node
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+   - **Region:** Ohio (US East — mais próximo do Brasil)
+4. Em **Environment Variables**, adicione todas as variáveis do `.env.example`
+5. Clique em **Create Web Service**
+
+O Render dará uma URL como `https://decorisa-api.onrender.com`
+
+### 2.3 Rodar o seed (dados iniciais)
+```bash
+# Com as variáveis de ambiente configuradas:
+cd backend
+cp .env.example .env
+# Preencha o .env com os valores reais
 npm install
-```
-
-### 2. Configure as variáveis de ambiente
-
-```bash
-cp .env.example .env.local
-# Edite .env.local com suas credenciais
-```
-
-### 3. Configure o banco de dados
-
-```bash
-# Gerar o Prisma Client
-npm run prisma:generate
-
-# Criar as tabelas
-npm run prisma:migrate
-
-# Popular com dados iniciais
-npm run prisma:seed
-```
-
-### 4. Inicie o servidor
-
-```bash
-npm run dev
-# Acesse http://localhost:3000
+node src/config/seed.js
 ```
 
 ---
 
-## Credenciais padrão (seed)
+## 3. Frontend — Netlify
 
-| Tipo | E-mail | Senha |
-|---|---|---|
-| Admin | admin@decorisa.com.br | admin123 |
+### 3.1 Atualizar a URL da API
+Em **todos os arquivos HTML** do frontend, substitua:
+```
+https://decorisa-api.onrender.com/api
+```
+pela URL real do Render.
 
-Acesse o painel em `/admin`.
+Ou centralize em um arquivo de configuração — abra qualquer HTML e mude a linha:
+```html
+<script>window.DECORISA_API_URL = 'https://decorisa-api.onrender.com/api';</script>
+```
 
----
+### 3.2 Deploy
+**Netlify (mais simples):**
+1. Acesse [netlify.com](https://netlify.com)
+2. Arraste a pasta `frontend/` para a área de deploy
+3. Pronto — ficará online em ~30 segundos
 
-## Deploy em Produção
-
-### Vercel (recomendado)
-
+**Ou via Git:**
 ```bash
-# Instale a CLI
+cd frontend
+# Conecte ao GitHub, depois no Netlify:
+# Build command: (vazio — é HTML estático)
+# Publish directory: /
+```
+
+**Vercel:**
+```bash
 npm i -g vercel
-
-# Deploy
-vercel
-
-# Configure as variáveis de ambiente no dashboard Vercel
-```
-
-### Railway (banco de dados)
-
-1. Crie um projeto no [Railway](https://railway.app)
-2. Adicione um serviço PostgreSQL
-3. Copie a `DATABASE_URL` para suas variáveis de ambiente
-
-### Supabase (alternativa + storage)
-
-1. Crie um projeto em [supabase.com](https://supabase.com)
-2. Use a connection string como `DATABASE_URL`
-3. Configure um bucket `produtos` para imagens
-
----
-
-## Funcionalidades Implementadas
-
-### Loja
-- [x] Homepage com hero, produtos em destaque, sobre, processo, diferenciais, depoimentos, newsletter
-- [x] Catálogo com filtros por categoria, busca e ordenação
-- [x] Página de produto com galeria, variantes, quantidade, WhatsApp
-- [x] Cart drawer animado (Framer Motion)
-- [x] Página do carrinho com cupom de desconto
-- [x] Checkout completo com Pix, Cartão e Boleto
-
-### Cliente
-- [x] Login com credenciais e Google OAuth
-- [x] Cadastro de conta
-- [x] Área do cliente: pedidos, favoritos, endereços, perfil
-
-### Admin
-- [x] Dashboard com métricas, pedidos recentes, top produtos
-- [x] Navegação para pedidos, produtos, clientes, banners, cupons
-
-### Backend
-- [x] API de produtos (GET + POST com auth)
-- [x] API de pedidos (GET + POST com criação automática de endereço)
-- [x] Validação de cupons
-- [x] Envio de e-mail via SMTP
-- [x] Autenticação NextAuth com Prisma adapter
-- [x] Schema completo do banco com todos os relacionamentos
-
-### UX/UI
-- [x] Animações Framer Motion (fadeUp, stagger, imageReveal, drawerSlide)
-- [x] Design tokens Decorisa (paleta, tipografia, espaçamento)
-- [x] Responsivo (mobile-first)
-- [x] Skeleton loading
-- [x] Toast notifications
-- [x] SEO (metadata, Open Graph, sitemap ready)
-
----
-
-## Paleta de Cores
-
-```
---cream:    #FAF8F4  (fundo principal)
---offwhite: #F5F2EC  (cards, seções alternadas)
---sand:     #E8E0D0  (bordas, separadores)
---stone:    #C8BFB0  (elementos secundários)
---cement:   #9E9589  (textos de apoio)
---warm:     #6B5E4E  (parágrafos)
---charcoal: #3D3830  (títulos secundários)
---ink:      #1A1714  (cor principal)
---accent:   #8B7355  (cor de destaque / brand)
+cd frontend
+vercel --prod
 ```
 
 ---
 
-## Cupom de Teste
+## 4. Configurações pós-deploy
 
-Use o cupom **BEMVINDO10** para 10% de desconto no checkout.
+### 4.1 Mercado Pago
+1. Acesse [mercadopago.com.br/developers](https://www.mercadopago.com.br/developers)
+2. Crie um app e obtenha o `Access Token` de produção
+3. Configure o webhook para: `https://decorisa-api.onrender.com/api/payment/mp/webhook`
+
+### 4.2 E-mail (Resend — recomendado)
+1. Crie conta em [resend.com](https://resend.com)
+2. Adicione seu domínio e verifique via DNS
+3. Gere uma API Key
+4. Configure no `.env`:
+   ```
+   MAIL_HOST=smtp.resend.com
+   MAIL_PORT=465
+   MAIL_USER=resend
+   MAIL_PASS=re_sua_chave
+   MAIL_FROM=Decorisa <noreply@seudominio.com.br>
+   ```
+
+### 4.3 Número de WhatsApp
+Em todos os arquivos HTML, substitua `5511999999999` pelo seu número real (com código do país, sem + e sem espaços).
+
+### 4.4 Domínio personalizado
+- **Netlify:** Settings → Domain Management → Add custom domain
+- **Render:** Settings → Custom Domain
 
 ---
 
-## Licença
+## 5. Cupons pré-configurados
 
-Projeto desenvolvido exclusivamente para a marca **Decorisa**.
+| Código | Desconto | Mínimo |
+|--------|----------|--------|
+| `DECORISA10` | 10% | Sem mínimo |
+| `DECORISA15` | 15% | R$ 300 |
+| `BEMVINDO`   | 5%  | Sem mínimo |
+| `FRETEGRATIS`| R$ 25 fixo | R$ 200 |
+
+---
+
+## 6. Rotas da API
+
+### Públicas
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET`  | `/health` | Status da API |
+| `POST` | `/api/auth/register` | Cadastro |
+| `POST` | `/api/auth/login` | Login |
+| `GET`  | `/api/products` | Listar produtos |
+| `GET`  | `/api/products/:slug` | Detalhe do produto |
+| `GET`  | `/api/products/categories` | Categorias |
+| `POST` | `/api/coupons/validate` | Validar cupom |
+| `POST` | `/api/newsletter` | Assinar newsletter |
+| `POST` | `/api/contact` | Formulário de contato |
+| `GET`  | `/api/payment/shipping/:cep` | Calcular frete |
+| `POST` | `/api/orders` | Criar pedido |
+
+### Autenticadas (token JWT)
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET`  | `/api/auth/me` | Dados do usuário |
+| `PUT`  | `/api/auth/profile` | Editar perfil |
+| `GET`  | `/api/orders/mine` | Meus pedidos |
+| `GET`  | `/api/addresses` | Meus endereços |
+| `POST` | `/api/addresses` | Novo endereço |
+
+### Admin (role: admin)
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| `GET`  | `/api/admin/metrics` | Dashboard |
+| `GET`  | `/api/admin/clients` | Lista de clientes |
+| `GET`  | `/api/orders` | Todos os pedidos |
+| `PATCH`| `/api/orders/:id/status` | Atualizar status |
+| `POST` | `/api/products` | Criar produto |
+| `PUT`  | `/api/products/:id` | Editar produto |
+| `GET`  | `/api/coupons` | Listar cupons |
+| `POST` | `/api/coupons` | Criar cupom |
+
+---
+
+## 7. Acesso admin
+
+Após rodar o seed, acesse `/pages/admin.html` com:
+- **E-mail:** valor de `ADMIN_EMAIL` no `.env`
+- **Senha:** valor de `ADMIN_PASSWORD` no `.env`
+
+---
+
+**Decorisa** — Feito com cuidado, pensado com intenção.
