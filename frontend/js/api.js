@@ -240,6 +240,19 @@ const api = {
     async newsletter() {
       return get('/newsletter', true);
     },
+    /* ── Categorias (admin) ── */
+    async allCategories() {
+      return get('/admin/categories', true);
+    },
+    async createCategory(payload) {
+      return post('/admin/categories', payload, true);
+    },
+    async updateCategory(id, payload) {
+      return put(`/admin/categories/${id}`, payload, true);
+    },
+    async deleteCategory(id) {
+      return del(`/admin/categories/${id}`, true);
+    },
   },
 };
 

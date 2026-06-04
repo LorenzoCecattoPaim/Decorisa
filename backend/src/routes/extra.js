@@ -223,6 +223,89 @@ adminRouter.put('/banners/:id', auth, adminOnly, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+/* ── CATEGORIAS (admin) ── */
+
+/* GET /api/admin/categories — todas (inclusive inativas) */
+adminRouter.get('/categories', auth, adminOnly, async (req, res, next) => {
+  try {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    res.json({ categories: data });
+  } catch (err) { next(err); }
+});
+
+/* POST /api/admin/categories */
+adminRouter.post('/categories', auth, adminOnly,
+  body('name').trim().notEmpty().withMessage('Nome obrigatório'),
+  body('slug').trim().matches(/^[a-z0-9-]+$/).withMessage('Slug inválido (use apenas letras minúsculas, números e hífens)'),
+  validate,
+  async (req, res, next) => {
+    try {
+      const { name, slug, description, sort_order, active } = req.body;
+
+      // Verifica se slug já existe
+      const { data: existing } = await supabase
+        .from('categories').select('id').eq('slug', slug).single();
+      if (existing) return res.status(409).json({ error: `Slug "${slug}" já está em uso.` });
+
+      const { data, error } = await supabase
+        .from('categories')
+        .insert({ name, slug, description: description || null, sort_order: sort_order || 0, active: active !== false })
+        .select().single();
+      if (error) throw error;
+      res.status(201).json({ category: data });
+    } catch (err) { next(err); }
+  }
+);
+
+/* PUT /api/admin/categories/:id */
+adminRouter.put('/categories/:id', auth, adminOnly, async (req, res, next) => {
+  try {
+    const allowed = ['name','slug','description','sort_order','active'];
+    const payload = Object.fromEntries(
+      allowed.filter(f => req.body[f] !== undefined).map(f => [f, req.body[f]])
+    );
+
+    // Se slug está sendo alterado, verifica unicidade
+    if (payload.slug) {
+      const { data: existing } = await supabase
+        .from('categories').select('id').eq('slug', payload.slug).neq('id', req.params.id).single();
+      if (existing) return res.status(409).json({ error: `Slug "${payload.slug}" já está em uso.` });
+    }
+
+    const { data, error } = await supabase
+      .from('categories').update(payload).eq('id', req.params.id).select().single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Categoria não encontrada.' });
+    res.json({ category: data });
+  } catch (err) { next(err); }
+});
+
+/* DELETE /api/admin/categories/:id */
+adminRouter.delete('/categories/:id', auth, adminOnly, async (req, res, next) => {
+  try {
+    // Verifica se há produtos vinculados
+    const { count } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true })
+      .eq('category_id', req.params.id)
+      .eq('active', true);
+
+    if (count > 0) {
+      return res.status(409).json({
+        error: `Esta categoria possui ${count} produto(s) ativo(s). Desative-os ou mova-os antes de excluir a categoria.`
+      });
+    }
+
+    const { error } = await supabase.from('categories').delete().eq('id', req.params.id);
+    if (error) throw error;
+    res.json({ message: 'Categoria excluída.' });
+  } catch (err) { next(err); }
+});
+
 /* ============================================================
    routes/payment.js — Mercado Pago
    ============================================================ */
