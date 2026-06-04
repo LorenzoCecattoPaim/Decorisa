@@ -1,37 +1,43 @@
 /**
- * DECORISA — cart.js
- * Carrinho de compras com persistência localStorage
+ * DECORISA - cart.js
+ * Carrinho de compras com persistencia localStorage.
  */
 
 const Cart = (() => {
   const KEY = 'decorisa_cart';
 
-  let _items   = [];
-  let _coupon  = null;
+  let _items = [];
+  let _coupon = null;
   let _shipping = null;
 
-  /* === PERSISTÊNCIA === */
   function load() {
-    try { _items = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { _items = []; }
+    try { _items = JSON.parse(localStorage.getItem(KEY) || '[]'); }
+    catch { _items = []; }
   }
+
   function save() {
     localStorage.setItem(KEY, JSON.stringify(_items));
     _updateCount();
     _renderDrawer();
   }
 
-  /* === CRUD === */
   function add(product, qty = 1, color = null, size = null) {
     const key = `${product.id}-${color}-${size}`;
-    const ex  = _items.find(i => i.key === key);
+    const ex = _items.find(i => i.key === key);
     if (ex) {
       ex.qty = Math.min(ex.qty + qty, product.stock || 99);
     } else {
       _items.push({
-        key, id: product.id, slug: product.slug,
-        name: product.name, material: product.material,
-        price: Number(product.price), stock: product.stock || 99,
-        qty, color, size,
+        key,
+        id: product.id,
+        slug: product.slug,
+        name: product.name,
+        material: product.material,
+        price: Number(product.price),
+        stock: product.stock || 99,
+        qty,
+        color,
+        size,
         image: product.images?.[0]?.url || null,
       });
     }
@@ -54,17 +60,30 @@ const Cart = (() => {
 
   function clear() {
     _items = [];
-    _coupon  = null;
+    _coupon = null;
     _shipping = null;
     save();
   }
 
-  function setShipping(cost) { _shipping = cost; _renderDrawer(); }
-  function setCoupon(c)      { _coupon   = c;    _renderDrawer(); }
-  function clearCoupon()     { _coupon   = null; _renderDrawer(); }
+  function setShipping(cost) {
+    _shipping = cost;
+    _renderDrawer();
+  }
 
-  /* === CÁLCULOS === */
-  function subtotal() { return +_items.reduce((s,i) => s + i.price * i.qty, 0).toFixed(2); }
+  function setCoupon(c) {
+    _coupon = c;
+    _renderDrawer();
+  }
+
+  function clearCoupon() {
+    _coupon = null;
+    _renderDrawer();
+  }
+
+  function subtotal() {
+    return +_items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
+  }
+
   function discount() {
     if (!_coupon) return 0;
     const sub = subtotal();
@@ -72,16 +91,22 @@ const Cart = (() => {
       ? +(sub * _coupon.value / 100).toFixed(2)
       : +Math.min(_coupon.value, sub).toFixed(2);
   }
-  function shippingCost() { return _shipping ?? null; }
+
+  function shippingCost() {
+    return _shipping ?? null;
+  }
+
   function total() {
     return +(subtotal() - discount() + (_shipping || 0)).toFixed(2);
   }
-  function count() { return _items.reduce((s,i) => s + i.qty, 0); }
 
-  /* === UI === */
+  function count() {
+    return _items.reduce((s, i) => s + i.qty, 0);
+  }
+
   function _updateCount() {
     const els = document.querySelectorAll('.cart-count');
-    const n   = count();
+    const n = count();
     els.forEach(el => {
       el.textContent = n;
       el.classList.toggle('visible', n > 0);
@@ -92,19 +117,25 @@ const Cart = (() => {
     return 'R$ ' + Number(v).toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
+  function _qs(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
   function _renderDrawer() {
-    const itemsEl  = document.getElementById('cartItems');
-    const emptyEl  = document.getElementById('cartEmpty');
+    const itemsEl = document.getElementById('cartItems');
+    const emptyEl = document.getElementById('cartEmpty');
     const footerEl = document.getElementById('cartFooter');
     if (!itemsEl) return;
 
     if (_items.length === 0) {
-      emptyEl?.style  && (emptyEl.style.display  = 'flex');
+      emptyEl?.style && (emptyEl.style.display = 'flex');
       footerEl?.style && (footerEl.style.display = 'none');
       itemsEl.innerHTML = '';
       return;
     }
-    emptyEl?.style  && (emptyEl.style.display  = 'none');
+
+    emptyEl?.style && (emptyEl.style.display = 'none');
     footerEl?.style && (footerEl.style.display = 'block');
 
     itemsEl.innerHTML = _items.map(item => `
@@ -112,7 +143,7 @@ const Cart = (() => {
         <div class="cart-item-img" aria-hidden="true">
           ${item.image
             ? `<img src="${item.image}" alt="${item.name}" style="width:100%;height:100%;object-fit:cover">`
-            : `<div style="width:100%;height:100%;background:var(--color-bg-alt)"></div>`}
+            : `<div class="premium-placeholder premium-placeholder--small"><span>Imagem em breve</span></div>`}
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
@@ -120,7 +151,7 @@ const Cart = (() => {
           <div class="cart-item-qty">
             <button onclick="Cart.changeQty('${item.key}',-1)" aria-label="Diminuir">−</button>
             <span>${item.qty}</span>
-            <button onclick="Cart.changeQty('${item.key}',1)"  aria-label="Aumentar">+</button>
+            <button onclick="Cart.changeQty('${item.key}',1)" aria-label="Aumentar">+</button>
           </div>
           <button class="cart-item-remove" onclick="Cart.remove('${item.key}')">Remover</button>
         </div>
@@ -128,7 +159,6 @@ const Cart = (() => {
       </li>
     `).join('');
 
-    /* Totais */
     _qs('cartSubtotal', _fmt(subtotal()));
     const d = discount();
     const dr = document.getElementById('discountRow');
@@ -141,45 +171,38 @@ const Cart = (() => {
     _qs('cartTotal', _fmt(total()));
   }
 
-  function _qs(id, val) {
-    const el = document.getElementById(id);
-    if (el) el.textContent = val;
-  }
-
-  /* === DRAWER === */
   function openDrawer() {
     const d = document.getElementById('cartDrawer');
     if (!d) return;
     d.classList.add('open');
-    d.setAttribute('aria-hidden','false');
+    d.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
   }
+
   function closeDrawer() {
     const d = document.getElementById('cartDrawer');
     if (!d) return;
     d.classList.remove('open');
-    d.setAttribute('aria-hidden','true');
+    d.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
   }
 
-  /* === INIT === */
   function init() {
     load();
     _updateCount();
     _renderDrawer();
 
     document.getElementById('cartToggle')?.addEventListener('click', openDrawer);
-    document.getElementById('cartClose' )?.addEventListener('click', closeDrawer);
+    document.getElementById('cartClose')?.addEventListener('click', closeDrawer);
     document.getElementById('cartOverlay')?.addEventListener('click', closeDrawer);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
   }
 
-  /* === FRETE === */
   async function calcularFrete() {
     const cepInput = document.getElementById('cepInput');
     const resultEl = document.getElementById('shippingResult');
     if (!cepInput || !resultEl) return;
-    const cep = cepInput.value.replace(/\D/g,'');
+    const cep = cepInput.value.replace(/\D/g, '');
     if (cep.length !== 8) { resultEl.textContent = 'CEP inválido.'; return; }
     resultEl.textContent = 'Calculando...';
     try {
@@ -196,7 +219,7 @@ const Cart = (() => {
 
   async function aplicarCupom() {
     const codeInput = document.getElementById('couponInput');
-    const resultEl  = document.getElementById('couponResult');
+    const resultEl = document.getElementById('couponResult');
     if (!codeInput || !resultEl) return;
     const code = codeInput.value.trim();
     if (!code) { resultEl.textContent = 'Digite um cupom.'; return; }
@@ -211,23 +234,35 @@ const Cart = (() => {
     }
   }
 
-  /* Expõe payload para checkout */
   function getCheckoutPayload() {
     return {
       items: _items.map(i => ({
-        product_id: i.id, quantity: i.qty,
-        variant_color: i.color, variant_size: i.size,
+        product_id: i.id,
+        quantity: i.qty,
+        variant_color: i.color,
+        variant_size: i.size,
       })),
       coupon_code: _coupon?.code || null,
     };
   }
 
   return {
-    init, add, remove, changeQty, clear,
-    openDrawer, closeDrawer,
-    calcularFrete, aplicarCupom,
-    setShipping, setCoupon,
-    subtotal, discount, shippingCost, total, count,
+    init,
+    add,
+    remove,
+    changeQty,
+    clear,
+    openDrawer,
+    closeDrawer,
+    calcularFrete,
+    aplicarCupom,
+    setShipping,
+    setCoupon,
+    subtotal,
+    discount,
+    shippingCost,
+    total,
+    count,
     getItems: () => _items,
     getCheckoutPayload,
     getCoupon: () => _coupon,

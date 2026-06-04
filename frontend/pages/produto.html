@@ -2,6 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index,follow">
+<meta name="theme-color" content="#F9F7F4">
+<meta property="og:title" content="Produto Decorisa">
+<meta property="og:description" content="Concreto premium, design exclusivo e produção sob demanda.">
+<meta property="og:type" content="product">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="Produto artesanal Decorisa — Concreto premium, design exclusivo, produção sob demanda.">
 <title>Produto — Decorisa</title>
 <link rel="icon" type="image/svg+xml" href="../assets/svg/favicon.svg">
@@ -136,9 +142,9 @@
     <div class="footer-col footer-brand">
       <a href="../index.html" class="logo footer-logo"><span class="logo-deco">Deco</span><span class="logo-risa">risa</span></a>
       <p class="footer-desc">Objetos artesanais em concreto. Design, exclusividade e presença.</p>
-      <a href="https://wa.me/5511999999999" class="footer-whatsapp" target="_blank" rel="noopener">
+      <a href="https://wa.me/5554999005435" class="footer-whatsapp" target="_blank" rel="noopener">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
-        (11) 99999-9999
+        +55 54 99900-5435
       </a>
     </div>
     <div class="footer-col">
@@ -175,7 +181,7 @@
 </footer>
 
 <div class="toast" id="toast" role="alert" aria-live="polite"></div>
-<a href="https://wa.me/5511999999999" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
+<a href="https://wa.me/5554999005435" class="whatsapp-float" target="_blank" rel="noopener" aria-label="WhatsApp">
   <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
 </a>
 
@@ -209,6 +215,10 @@
   /* Atualiza meta tags dinamicamente */
   document.title = `${product.name} — Decorisa`;
   document.querySelector('meta[name=description]').content = product.description?.slice(0,160) || '';
+  document.querySelector('meta[property="og:title"]')?.setAttribute('content', `${product.name} — Decorisa`);
+  document.querySelector('meta[property="og:description"]')?.setAttribute('content', product.description?.slice(0,160) || '');
+  document.querySelector('meta[name="twitter:title"]')?.setAttribute('content', `${product.name} — Decorisa`);
+  document.querySelector('meta[name="twitter:description"]')?.setAttribute('content', product.description?.slice(0,160) || '');
 
   /* Inicializa seleções */
   const colors = (product.variants || []).filter(v => v.type === 'color');
@@ -250,8 +260,14 @@
           ${images[0]?.url
             ? `<img id="galleryMainImg" src="${images[0].url}" alt="${images[0].alt || product.name}"
                 style="width:100%;height:100%;object-fit:cover;transition:opacity 0.2s">`
-            : `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--color-bg-alt)">
-                <svg viewBox="0 0 160 200" width="80" style="opacity:.2"><path d="M48 50Q40 100 44 155Q56 190 80 191Q104 190 116 155Q120 100 112 50Z" fill="currentColor"/><ellipse cx="80" cy="50" rx="32" ry="8" fill="currentColor"/></svg>
+            : `<div class="premium-placeholder">
+                <div class="premium-placeholder-mark" aria-hidden="true">
+                  <svg viewBox="0 0 160 200" width="92" height="116" fill="none" stroke="currentColor" stroke-width="1.25">
+                    <path d="M48 50Q40 100 44 155Q56 190 80 191Q104 190 116 155Q120 100 112 50Z"></path>
+                    <ellipse cx="80" cy="50" rx="32" ry="8"></ellipse>
+                  </svg>
+                </div>
+                <span>Imagem do produto em breve</span>
                </div>`}
         </div>
         <div class="gallery-thumbs" id="galleryThumbs">
@@ -294,6 +310,34 @@
         <div class="produto-divider"></div>
         <p class="produto-desc">${product.description || ''}</p>
         <div class="produto-artesanal">"Cada peça é produzida artesanalmente, tornando cada item único."</div>
+
+        <section class="product-personalize" style="margin-bottom:28px;padding:24px;border:1px solid rgba(44,42,38,0.08);border-radius:24px;background:rgba(255,255,255,0.74)">
+          <div class="eyebrow"><span class="eyebrow-line"></span>Personalize sua Peça</div>
+          <h2 style="font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:16px">Acabamentos, prazo e envio pensados para a sua encomenda.</h2>
+          <div class="personalize-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+            <div>
+              <strong style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Acabamentos disponíveis</strong>
+              <ul style="font-size:14px;line-height:1.8;color:var(--color-text-muted)">
+                <li>Liso</li>
+                <li>Colorido</li>
+                <li>Marmorizado</li>
+                <li>Folha dourada (+R$15)</li>
+                <li>Folha prateada (+R$15)</li>
+                <li>Folha rosé (+R$15)</li>
+              </ul>
+            </div>
+            <div>
+              <strong style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Informações</strong>
+              <ul style="font-size:14px;line-height:1.8;color:var(--color-text-muted)">
+                <li><strong style="color:var(--color-text)">Prazo de produção:</strong> 7 a 20 dias úteis</li>
+                <li>Peças produzidas sob encomenda.</li>
+                <li>Enviamos para todo o Brasil.</li>
+                <li>Pagamento via PIX, dinheiro e cartão.</li>
+                <li>Cartão possui acréscimo referente à taxa da maquininha.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
 
         ${colors.length > 0 ? `
           <div class="option-group">
@@ -350,13 +394,13 @@
 
         <div class="produto-actions">
           ${isCustom
-            ? `<a href="https://wa.me/5511999999999?text=Olá!%20Quero+uma+peça+personalizada+Decorisa!" target="_blank" rel="noopener" class="btn-primary btn-comprar" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
+            ? `<a href="https://wa.me/5554999005435?text=Olá!%20Quero+uma+peça+personalizada+Decorisa!" target="_blank" rel="noopener" class="btn-primary btn-comprar" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none">
                  Solicitar pelo WhatsApp
                </a>`
             : `<button class="btn-primary btn-comprar" onclick="addToCartNow()">
                  Adicionar ao carrinho
                </button>`}
-          <a href="https://wa.me/5511999999999?text=Olá!%20Tenho%20interesse%20em%20${encodeURIComponent(product.name)}"
+          <a href="https://wa.me/5554999005435?text=Olá!%20Tenho%20interesse%20em%20${encodeURIComponent(product.name)}"
              target="_blank" rel="noopener" class="btn-wpp">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
             WhatsApp

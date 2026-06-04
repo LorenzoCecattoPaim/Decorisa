@@ -1,20 +1,23 @@
 /**
- * DECORISA — api.js
- * Cliente HTTP centralizado para comunicação com o backend
+ * DECORISA - api.js
+ * Cliente HTTP centralizado para comunicacao com o backend oficial.
  */
 
-const API_URL = window.DECORISA_API_URL || 'http://localhost:3001/api';
+const API_URL = window.DECORISA_API_URL || 'https://decorisa-api.onrender.com/api';
 
 /* === TOKEN === */
 const Auth = {
-  getToken: ()  => localStorage.getItem('decorisa_token'),
+  getToken: () => localStorage.getItem('decorisa_token'),
   setToken: (t) => localStorage.setItem('decorisa_token', t),
-  clearToken:()  => localStorage.removeItem('decorisa_token'),
-  getUser:  ()  => { try { return JSON.parse(localStorage.getItem('decorisa_user') || 'null'); } catch { return null; } },
-  setUser:  (u) => localStorage.setItem('decorisa_user', JSON.stringify(u)),
-  clearUser:()  => localStorage.removeItem('decorisa_user'),
-  isLoggedIn:() => !!Auth.getToken(),
-  isAdmin:   () => Auth.getUser()?.role === 'admin',
+  clearToken: () => localStorage.removeItem('decorisa_token'),
+  getUser: () => {
+    try { return JSON.parse(localStorage.getItem('decorisa_user') || 'null'); }
+    catch { return null; }
+  },
+  setUser: (u) => localStorage.setItem('decorisa_user', JSON.stringify(u)),
+  clearUser: () => localStorage.removeItem('decorisa_user'),
+  isLoggedIn: () => !!Auth.getToken(),
+  isAdmin: () => Auth.getUser()?.role === 'admin',
   logout: () => { Auth.clearToken(); Auth.clearUser(); window.location.href = '/pages/cliente.html'; },
 };
 
@@ -22,7 +25,7 @@ const Auth = {
 async function request(method, path, body = null, auth = false) {
   const headers = { 'Content-Type': 'application/json' };
   if (auth || Auth.getToken()) {
-    headers['Authorization'] = `Bearer ${Auth.getToken()}`;
+    headers.Authorization = `Bearer ${Auth.getToken()}`;
   }
 
   const opts = { method, headers };
@@ -34,21 +37,20 @@ async function request(method, path, body = null, auth = false) {
   if (!res.ok) {
     const err = new Error(data.error || `Erro ${res.status}`);
     err.status = res.status;
-    err.fields  = data.fields || [];
+    err.fields = data.fields || [];
     throw err;
   }
+
   return data;
 }
 
-const get    = (path, auth)       => request('GET',    path, null,  auth);
-const post   = (path, body, auth) => request('POST',   path, body,  auth);
-const put    = (path, body, auth) => request('PUT',    path, body,  auth);
-const patch  = (path, body, auth) => request('PATCH',  path, body,  auth);
-const del    = (path, auth)       => request('DELETE', path, null,  auth);
+const get = (path, auth) => request('GET', path, null, auth);
+const post = (path, body, auth) => request('POST', path, body, auth);
+const put = (path, body, auth) => request('PUT', path, body, auth);
+const patch = (path, body, auth) => request('PATCH', path, body, auth);
+const del = (path, auth) => request('DELETE', path, null, auth);
 
-/* ============================================================
-   AUTH
-   ============================================================ */
+/* === API === */
 const api = {
   auth: {
     async register(name, email, password, phone) {
@@ -83,19 +85,16 @@ const api = {
     getUser: Auth.getUser,
   },
 
-  /* ============================================================
-     PRODUTOS
-     ============================================================ */
   products: {
     async list({ category, featured, search, sort, order, page, limit } = {}) {
       const params = new URLSearchParams();
       if (category) params.set('category', category);
       if (featured) params.set('featured', featured);
-      if (search)   params.set('search', search);
-      if (sort)     params.set('sort', sort);
-      if (order)    params.set('order', order);
-      if (page)     params.set('page', page);
-      if (limit)    params.set('limit', limit);
+      if (search) params.set('search', search);
+      if (sort) params.set('sort', sort);
+      if (order) params.set('order', order);
+      if (page) params.set('page', page);
+      if (limit) params.set('limit', limit);
       return get(`/products?${params}`);
     },
     async get(slug) {
@@ -121,9 +120,6 @@ const api = {
     },
   },
 
-  /* ============================================================
-     PEDIDOS
-     ============================================================ */
   orders: {
     async create(payload) {
       return post('/orders', payload);
@@ -134,12 +130,11 @@ const api = {
     async get(id) {
       return get(`/orders/${id}`, true);
     },
-    // admin
     async list({ status, page, limit, search } = {}) {
       const p = new URLSearchParams();
       if (status) p.set('status', status);
-      if (page)   p.set('page', page);
-      if (limit)  p.set('limit', limit);
+      if (page) p.set('page', page);
+      if (limit) p.set('limit', limit);
       if (search) p.set('search', search);
       return get(`/orders?${p}`, true);
     },
@@ -148,9 +143,6 @@ const api = {
     },
   },
 
-  /* ============================================================
-     CUPONS
-     ============================================================ */
   coupons: {
     async validate(code, subtotal) {
       return post('/coupons/validate', { code, subtotal });
@@ -166,9 +158,6 @@ const api = {
     },
   },
 
-  /* ============================================================
-     ENDEREÇOS
-     ============================================================ */
   addresses: {
     async list() {
       return get('/addresses', true);
@@ -184,39 +173,27 @@ const api = {
     },
   },
 
-  /* ============================================================
-     NEWSLETTER
-     ============================================================ */
   newsletter: {
     async subscribe(email) {
       return post('/newsletter', { email });
     },
   },
 
-  /* ============================================================
-     CONTATO
-     ============================================================ */
   contact: {
     async send(payload) {
       return post('/contact', payload);
     },
   },
 
-  /* ============================================================
-     PAGAMENTO
-     ============================================================ */
   payment: {
     async createMPPreference(order_id) {
       return post('/payment/mp/preference', { order_id }, true);
     },
     async getShipping(cep) {
-      return get(`/payment/shipping/${cep.replace(/\D/g,'')}`);
+      return get(`/payment/shipping/${cep.replace(/\D/g, '')}`);
     },
   },
 
-  /* ============================================================
-     ADMIN
-     ============================================================ */
   admin: {
     async metrics() {
       return get('/admin/metrics', true);
@@ -226,8 +203,8 @@ const api = {
     },
     async clients({ page, limit, search } = {}) {
       const p = new URLSearchParams();
-      if (page)   p.set('page', page);
-      if (limit)  p.set('limit', limit);
+      if (page) p.set('page', page);
+      if (limit) p.set('limit', limit);
       if (search) p.set('search', search);
       return get(`/admin/clients?${p}`, true);
     },
@@ -240,7 +217,6 @@ const api = {
     async newsletter() {
       return get('/newsletter', true);
     },
-    /* ── Categorias (admin) ── */
     async allCategories() {
       return get('/admin/categories', true);
     },
@@ -256,5 +232,5 @@ const api = {
   },
 };
 
-window.api  = api;
+window.api = api;
 window.Auth = Auth;
