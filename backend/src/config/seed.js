@@ -154,7 +154,7 @@ async function seed() {
 
   // Banners
   await supabase.from('banners').upsert([
-    { position:'hero', eyebrow:'Coleção 2025', title:'Design que respira presença.', subtitle:'Objetos artesanais em concreto. Cada peça é única, produzida com cuidado e intenção.', cta_label:'Explorar Coleção', cta_url:'/pages/loja.html', active:true, sort_order:1 },
+    { position:'hero', eyebrow:'Coleção 2026', title:'Design que respira presença.', subtitle:'Objetos artesanais em concreto. Cada peça é única, produzida com cuidado e intenção.', cta_label:'Explorar Coleção', cta_url:'/pages/loja.html', active:true, sort_order:1 },
     { position:'cta_banner', title:'Sua peça, do seu jeito.', subtitle:'Acabamentos personalizáveis: liso, colorido, marmorizado ou folha dourada/prateada/rosé.', cta_label:'Solicitar personalização', cta_url:'https://wa.me/5511999999999', active:true, sort_order:1 },
   ],{onConflict:'position'});
   console.log('✅  2 banners');

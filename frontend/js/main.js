@@ -93,18 +93,6 @@ function markActiveNav() {
   });
 }
 
-function injectBrandBadge() {
-  const badgeHTML = `
-    <div class="hero-brand">
-      <img src="${assetHref('svg/decorisa-logo.svg')}" alt="Decorisa Studio">
-      <span>Decorisa Studio</span>
-    </div>`;
-
-  document.querySelectorAll('.hero-content').forEach(hero => {
-    if (!hero.querySelector('.hero-brand')) hero.insertAdjacentHTML('afterbegin', badgeHTML);
-  });
-}
-
 function buildMobileMenu() {
   const mBtn = document.getElementById('mobileMenuBtn');
   const nav = document.getElementById('mainNav');
@@ -112,7 +100,7 @@ function buildMobileMenu() {
 
   mBtn.dataset.enhanced = 'true';
   mBtn.setAttribute('aria-expanded', 'false');
-  mBtn.innerHTML = '<span class="menu-icon" aria-hidden="true">☰</span><span class="menu-label">Menu</span>';
+  mBtn.innerHTML = '<span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>';
 
   const panel = document.createElement('aside');
   panel.className = 'menu-panel';
@@ -120,15 +108,22 @@ function buildMobileMenu() {
   panel.innerHTML = `
     <div class="menu-panel-inner">
       <div class="menu-panel-header">
-        <a href="${homeHref()}" class="logo menu-panel-logo">
-          <span class="logo-deco">Deco</span><span class="logo-risa">risa</span>
-        </a>
+        <div>
+          <p class="menu-panel-kicker">Navegação rápida</p>
+          <div class="menu-panel-title">Menu</div>
+        </div>
         <button type="button" class="menu-panel-close" aria-label="Fechar menu">×</button>
       </div>
       <p class="menu-panel-kicker">Coleção artesanal em concreto</p>
       <div class="menu-panel-search">
         <label class="sr-only" for="menuSearchInput">Buscar produtos</label>
-        <input id="menuSearchInput" type="search" placeholder="Buscar por nome ou categoria">
+        <div class="search-field search-field--compact">
+          <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="M20 20l-3.5-3.5"></path>
+          </svg>
+          <input id="menuSearchInput" type="search" placeholder="Buscar por nome ou categoria">
+        </div>
       </div>
       <nav class="menu-panel-nav" aria-label="Menu mobile">
         ${nav.querySelector('ul')?.innerHTML || ''}
@@ -210,7 +205,6 @@ function initHeader() {
   if (adminLink && window.Auth?.isAdmin()) adminLink.style.display = 'block';
 
   updateWhatsAppLinks();
-  injectBrandBadge();
 }
 
 /* === REVEAL ON SCROLL === */

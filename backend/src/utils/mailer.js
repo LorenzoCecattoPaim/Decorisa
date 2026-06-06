@@ -34,7 +34,7 @@ function base(content) {
   <div class="header"><div class="logo-text">Deco<em>risa</em></div></div>
   <div class="body">${content}</div>
   <div class="footer">
-    © 2025 Decorisa · São Paulo, SP · <a href="mailto:contato@decorisa.com.br" style="color:#8A8478">contato@decorisa.com.br</a><br>
+    © 2026 Decorisa · Campestre da Serra, RS · <a href="mailto:contato@decorisa.com.br" style="color:#8A8478">contato@decorisa.com.br</a><br>
     <a href="${process.env.FRONTEND_URL}/privacidade" style="color:#8A8478">Política de privacidade</a>
   </div>
 </div></body></html>`;
