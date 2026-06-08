@@ -201,19 +201,41 @@ const Cart = (() => {
   async function calcularFrete() {
     const cepInput = document.getElementById('cepInput');
     const resultEl = document.getElementById('shippingResult');
+
     if (!cepInput || !resultEl) return;
+
     const cep = cepInput.value.replace(/\D/g, '');
-    if (cep.length !== 8) { resultEl.textContent = 'CEP inválido.'; return; }
+
+    if (cep.length !== 8) {
+      resultEl.textContent = 'CEP inválido.';
+      return;
+    }
+
     resultEl.textContent = 'Calculando...';
+
     try {
       const data = await window.api.payment.getShipping(cep);
-      const cost = subtotal() >= data.shipping.free_from ? 0 : data.shipping.standard;
+
+      console.log('Resposta frete:', data);
+      console.log('Subtotal:', subtotal());
+
+      const cost =
+        subtotal() >= Number(data.shipping.free_from)
+          ? 0
+          : Number(data.shipping.standard);
+
+      console.log('Cost:', cost);
+
       setShipping(cost);
-      resultEl.textContent = cost === 0
-        ? '✓ Frete grátis para este CEP!'
-        : `Frete: ${_fmt(cost)} — Prazo: 5 a 8 dias úteis`;
-    } catch {
-      resultEl.textContent = 'Erro ao calcular frete.';
+
+      resultEl.textContent =
+        cost === 0
+          ? '✓ Frete grátis para este CEP!'
+          : `Frete: ${_fmt(cost)} — Prazo: 5 a 8 dias úteis`;
+
+    } catch (error) {
+      console.error('ERRO COMPLETO:', error);
+      resultEl.textContent = error.message || 'Erro ao calcular frete.';
     }
   }
 
