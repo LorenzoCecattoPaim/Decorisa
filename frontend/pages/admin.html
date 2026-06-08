@@ -55,6 +55,44 @@
   .sidebar-link.active { border-bottom-color:#C4BAA8;border-left:none; }
   .admin-body { padding:20px; }
 }
+
+/* ============================================================
+   UPLOAD DE IMAGENS
+   ============================================================ */
+.img-upload-section { margin-bottom: 28px; }
+.img-upload-label { display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:12px; }
+.img-dropzone { border:1.5px dashed var(--color-border-mid);padding:28px 20px;text-align:center;cursor:pointer;transition:border-color 0.2s,background 0.2s;background:var(--color-bg-alt);position:relative; }
+.img-dropzone:hover,.img-dropzone.dragover { border-color:var(--color-text);background:rgba(44,42,38,0.04); }
+.img-dropzone input[type="file"] { position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%; }
+.img-dropzone-icon { font-size:28px;margin-bottom:8px;color:var(--color-text-light);line-height:1; }
+.img-dropzone-text { font-size:12px;color:var(--color-text-muted);font-family:var(--font-body);line-height:1.6; }
+.img-dropzone-hint { font-size:10px;color:var(--color-text-light);margin-top:4px;letter-spacing:0.05em; }
+.img-progress-wrap { display:none;margin-top:12px; }
+.img-progress-wrap.visible { display:block; }
+.img-progress-bar-track { height:2px;background:var(--color-border-mid);overflow:hidden; }
+.img-progress-bar-fill { height:100%;background:var(--color-text);width:0%;transition:width 0.2s ease; }
+.img-progress-label { font-size:10px;color:var(--color-text-light);margin-top:5px;letter-spacing:0.05em; }
+.img-pending-preview { display:none;margin-top:14px;position:relative;max-width:180px; }
+.img-pending-preview.visible { display:inline-block; }
+.img-pending-preview img { width:100%;height:130px;object-fit:cover;display:block;border:0.5px solid var(--color-border-mid); }
+.img-pending-badge { position:absolute;top:6px;left:6px;background:var(--color-text);color:var(--color-bg);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:2px 6px;font-family:var(--font-body); }
+.img-pending-remove { position:absolute;top:6px;right:6px;background:#A33;color:#fff;border:none;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;font-family:var(--font-body); }
+.img-upload-msg { font-size:11px;min-height:15px;margin-top:8px;font-family:var(--font-body); }
+.img-upload-msg.error { color:#A33; }
+.img-upload-msg.success { color:#4A7A4A; }
+.img-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-top:14px; }
+.img-card { position:relative;border:0.5px solid var(--color-border-mid);background:var(--color-bg-alt);overflow:hidden; }
+.img-card img { width:100%;height:100px;object-fit:cover;display:block; }
+.img-card-overlay { position:absolute;inset:0;background:rgba(44,42,38,0);transition:background 0.2s;display:flex;flex-direction:column;justify-content:space-between;padding:6px; }
+.img-card:hover .img-card-overlay { background:rgba(44,42,38,0.55); }
+.img-card-bottom { display:flex;gap:4px;opacity:0;transition:opacity 0.2s; }
+.img-card:hover .img-card-bottom { opacity:1; }
+.img-card-btn { font-size:9px;letter-spacing:0.08em;text-transform:uppercase;font-family:var(--font-body);border:none;cursor:pointer;padding:3px 6px;line-height:1.4; }
+.img-card-btn-cover { background:var(--color-bg);color:var(--color-text); }
+.img-card-btn-del { background:#A33;color:#fff; }
+.img-cover-badge { position:absolute;top:6px;left:6px;background:var(--color-text);color:var(--color-bg);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 5px;font-family:var(--font-body);pointer-events:none; }
+.img-empty-state { font-size:12px;color:var(--color-text-light);font-family:var(--font-body);padding:10px 0; }
+
 </style>
 </head>
 <body>
@@ -207,6 +245,48 @@
               <input type="checkbox" id="pActive" checked style="accent-color:var(--color-text)"> Produto ativo
             </label>
           </div>
+
+          <!-- ============================================================
+               SEÇÃO DE IMAGENS DO PRODUTO
+               ============================================================ -->
+          <div class="img-upload-section">
+            <span class="img-upload-label">Imagens do produto</span>
+
+            <!-- Grade de imagens existentes (visível apenas ao editar) -->
+            <div id="imgExistingGrid" style="display:none;margin-bottom:16px">
+              <div id="imgGrid" class="img-grid"></div>
+            </div>
+
+            <!-- Área de drag & drop para nova imagem -->
+            <div class="img-dropzone" id="imgDropzone"
+                 ondragover="imgHandleDragOver(event)"
+                 ondragleave="imgHandleDragLeave(event)"
+                 ondrop="imgHandleDrop(event)">
+              <input type="file" id="imgFileInput" accept=".jpg,.jpeg,.png,.webp" onchange="imgHandleFileSelect(event)">
+              <div class="img-dropzone-icon">&#8679;</div>
+              <div class="img-dropzone-text">Arraste uma imagem aqui ou clique para selecionar</div>
+              <div class="img-dropzone-hint">JPG · PNG · WEBP · máx 10 MB</div>
+            </div>
+
+            <!-- Preview da imagem selecionada (antes de salvar) -->
+            <div class="img-pending-preview" id="imgPendingPreview">
+              <img id="imgPendingImg" src="" alt="Preview">
+              <span class="img-pending-badge">Pendente</span>
+              <button type="button" class="img-pending-remove" onclick="imgClearPending()" title="Remover">&times;</button>
+            </div>
+
+            <!-- Barra de progresso -->
+            <div class="img-progress-wrap" id="imgProgressWrap">
+              <div class="img-progress-bar-track">
+                <div class="img-progress-bar-fill" id="imgProgressFill"></div>
+              </div>
+              <div class="img-progress-label" id="imgProgressLabel">Enviando... 0%</div>
+            </div>
+
+            <!-- Mensagem de erro/sucesso do upload -->
+            <div class="img-upload-msg" id="imgUploadMsg"></div>
+          </div>
+          <!-- / FIM SEÇÃO IMAGENS -->
           <p id="produtoFormMsg" style="font-size:12px;min-height:16px;margin-bottom:12px"></p>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <button type="submit" class="btn-primary" id="produtoSaveBtn">Salvar produto</button>
@@ -342,7 +422,7 @@
     cupons:    loadCupons,
     banners:   loadBanners,
     categorias: loadCategorias,
-    cadastro: () => populateCatSelect(),
+    cadastro: () => { populateCatSelect(); imgInitForm(document.getElementById('editingProductId').value || null); },
   };
 
   /* === DASHBOARD === */
@@ -513,6 +593,7 @@
     document.getElementById('pFeatured').checked = featured;
     document.getElementById('pActive').checked   = active;
     document.getElementById('produtoSaveBtn').textContent = 'Atualizar produto';
+    imgInitForm(id); // Carregar imagens existentes do produto
   };
 
   window.toggleProduct = async (id, active) => {
@@ -544,9 +625,18 @@
       active:   document.getElementById('pActive').checked,
     };
     try {
-      editId
-        ? await api.products.update(editId, payload)
-        : await api.products.create(payload);
+      let result;
+      if (editId) {
+        result = await api.products.update(editId, payload);
+        // Upload da imagem pendente (se houver) para produto já existente
+        await imgUploadPendingIfAny(editId);
+      } else {
+        result = await api.products.create(payload);
+        // Upload da imagem pendente (se houver) para o produto recém-criado
+        if (result?.product?.id) {
+          await imgUploadPendingIfAny(result.product.id);
+        }
+      }
       msg.textContent = `✓ Produto ${editId ? 'atualizado' : 'criado'} com sucesso!`;
       msg.style.color = '#4A7A4A';
       resetProdutoForm();
@@ -562,6 +652,7 @@
     document.getElementById('editingProductId').value = '';
     document.getElementById('cadastroTitle').textContent = 'Novo produto';
     document.getElementById('produtoSaveBtn').textContent = 'Salvar produto';
+    imgInitForm(null); // Limpar área de imagens
   };
 
   /* === CLIENTES === */
@@ -911,6 +1002,231 @@
       await api.admin.updateCategory(id, { sort_order: parseInt(newOrder) || 0 });
     } catch (err) { showToast('Erro ao atualizar ordem: ' + err.message); }
   };
+
+
+/* ============================================================
+   SISTEMA DE UPLOAD DE IMAGENS
+   Gerencia: seleção, drag-drop, preview, progresso, upload,
+   listagem, troca de capa e exclusão de imagens.
+   ============================================================ */
+
+  // Estado do módulo de upload
+  const imgState = {
+    pendingFile: null,       // File selecionado, ainda não enviado
+    currentProductId: null,  // ID do produto em edição (null = novo)
+  };
+
+  /* --- Drag & Drop --- */
+  window.imgHandleDragOver = (e) => {
+    e.preventDefault();
+    document.getElementById('imgDropzone').classList.add('dragover');
+  };
+
+  window.imgHandleDragLeave = (e) => {
+    document.getElementById('imgDropzone').classList.remove('dragover');
+  };
+
+  window.imgHandleDrop = (e) => {
+    e.preventDefault();
+    document.getElementById('imgDropzone').classList.remove('dragover');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) imgProcessFile(file);
+  };
+
+  /* --- Seleção via input --- */
+  window.imgHandleFileSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) imgProcessFile(file);
+    // Limpar input para permitir selecionar o mesmo arquivo novamente
+    e.target.value = '';
+  };
+
+  /* --- Validação frontend (espelho das validações do backend) --- */
+  function imgValidateFile(file) {
+    const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const ALLOWED_EXTS  = ['.jpg', '.jpeg', '.png', '.webp'];
+    const MAX_BYTES     = 10 * 1024 * 1024;
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      return `Tipo não permitido: ${file.type}. Use JPG, PNG ou WEBP.`;
+    }
+    const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    if (!ALLOWED_EXTS.includes(ext)) {
+      return `Extensão não permitida: ${ext}. Use .jpg, .jpeg, .png ou .webp.`;
+    }
+    if (file.size > MAX_BYTES) {
+      return `Arquivo muito grande: ${(file.size / 1024 / 1024).toFixed(1)} MB. O limite é 10 MB.`;
+    }
+    return null; // válido
+  }
+
+  /* --- Processar arquivo selecionado --- */
+  function imgProcessFile(file) {
+    imgSetMsg('', '');
+
+    const validationError = imgValidateFile(file);
+    if (validationError) {
+      imgSetMsg(validationError, 'error');
+      return;
+    }
+
+    imgState.pendingFile = file;
+
+    // Gerar preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const preview = document.getElementById('imgPendingPreview');
+      const img = document.getElementById('imgPendingImg');
+      img.src = e.target.result;
+      preview.classList.add('visible');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  /* --- Limpar imagem pendente --- */
+  window.imgClearPending = () => {
+    imgState.pendingFile = null;
+    const preview = document.getElementById('imgPendingPreview');
+    const img = document.getElementById('imgPendingImg');
+    preview.classList.remove('visible');
+    img.src = '';
+    imgSetMsg('', '');
+    imgSetProgress(0, false);
+  };
+
+  /* --- Definir mensagem de feedback --- */
+  function imgSetMsg(text, type) {
+    const el = document.getElementById('imgUploadMsg');
+    el.textContent = text;
+    el.className = 'img-upload-msg' + (type ? ' ' + type : '');
+  }
+
+  /* --- Controle da barra de progresso --- */
+  function imgSetProgress(percent, visible) {
+    const wrap  = document.getElementById('imgProgressWrap');
+    const fill  = document.getElementById('imgProgressFill');
+    const label = document.getElementById('imgProgressLabel');
+    if (visible) {
+      wrap.classList.add('visible');
+      fill.style.width = percent + '%';
+      label.textContent = percent < 100 ? `Enviando... ${percent}%` : 'Processando...';
+    } else {
+      wrap.classList.remove('visible');
+      fill.style.width = '0%';
+    }
+  }
+
+  /* --- Upload imediato (quando produto já existe) --- */
+  async function imgUploadNow(productId, file) {
+    imgSetProgress(0, true);
+    imgSetMsg('', '');
+
+    const isCover = !(await imgHasImages(productId)); // primeira imagem vira capa
+
+    try {
+      await api.images.upload(productId, file, {
+        alt: file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
+        sort_order: 0,
+        is_cover: isCover,
+        onProgress: (pct) => imgSetProgress(pct, true),
+      });
+
+      imgSetProgress(100, true);
+      imgSetMsg('✓ Imagem enviada com sucesso.', 'success');
+      imgClearPending();
+      await imgLoadGrid(productId);
+
+      setTimeout(() => imgSetMsg('', ''), 3000);
+    } catch (err) {
+      imgSetProgress(0, false);
+      imgSetMsg(err.message || 'Erro ao fazer upload.', 'error');
+    }
+  }
+
+  /* --- Verifica se o produto já tem imagens --- */
+  async function imgHasImages(productId) {
+    try {
+      const { images } = await api.images.list(productId);
+      return (images || []).length > 0;
+    } catch { return false; }
+  }
+
+  /* --- Carregar e renderizar grade de imagens existentes --- */
+  async function imgLoadGrid(productId) {
+    const section = document.getElementById('imgExistingGrid');
+    const grid    = document.getElementById('imgGrid');
+
+    if (!productId) {
+      section.style.display = 'none';
+      grid.innerHTML = '';
+      return;
+    }
+
+    try {
+      const { images } = await api.images.list(productId);
+      const list = (images || []).sort((a, b) => a.sort_order - b.sort_order);
+
+      if (list.length === 0) {
+        section.style.display = 'block';
+        grid.innerHTML = '<p class="img-empty-state">Nenhuma imagem cadastrada ainda.</p>';
+        return;
+      }
+
+      section.style.display = 'block';
+      grid.innerHTML = list.map(img => `
+        <div class="img-card" id="img-card-${img.id}">
+          <img src="${img.url}" alt="${img.alt || ''}" loading="lazy"
+               onerror="this.style.opacity='0.3';this.title='Imagem indisponível'">
+          ${img.is_cover ? '<span class="img-cover-badge">Capa</span>' : ''}
+          <div class="img-card-overlay">
+            <div></div>
+            <div class="img-card-bottom">
+              ${!img.is_cover ? `<button class="img-card-btn img-card-btn-cover" onclick="imgSetCover('${img.id}','${productId}')">Capa</button>` : ''}
+              <button class="img-card-btn img-card-btn-del" onclick="imgDeleteImage('${img.id}','${productId}')">Excluir</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      section.style.display = 'block';
+      grid.innerHTML = `<p class="img-empty-state" style="color:#A33">Erro ao carregar imagens: ${err.message}</p>`;
+    }
+  }
+
+  /* --- Definir imagem como capa --- */
+  window.imgSetCover = async (imageId, productId) => {
+    try {
+      await api.images.setCover(imageId);
+      await imgLoadGrid(productId);
+    } catch (err) {
+      showToast('Erro ao definir capa: ' + err.message);
+    }
+  };
+
+  /* --- Excluir imagem --- */
+  window.imgDeleteImage = async (imageId, productId) => {
+    if (!confirm('Excluir esta imagem? A ação não pode ser desfeita.')) return;
+    try {
+      await api.images.delete(imageId);
+      await imgLoadGrid(productId);
+      showToast('Imagem excluída.');
+    } catch (err) {
+      showToast('Erro ao excluir imagem: ' + err.message);
+    }
+  };
+
+  /* --- Inicializar estado de upload ao abrir o formulário --- */
+  function imgInitForm(productId) {
+    imgState.currentProductId = productId || null;
+    imgClearPending();
+    imgLoadGrid(productId || null);
+  }
+
+  /* --- Hook: ao salvar produto, faz upload da imagem pendente se houver --- */
+  async function imgUploadPendingIfAny(productId) {
+    if (!imgState.pendingFile) return;
+    await imgUploadNow(productId, imgState.pendingFile);
+  }
 
   /* Init */
   loadDashboard();

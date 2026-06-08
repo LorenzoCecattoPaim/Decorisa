@@ -120,6 +120,71 @@ const api = {
     },
   },
 
+  images: {
+    /**
+     * Upload de imagem via multipart/form-data.
+     * Retorna uma Promise com progresso via onProgress(percent).
+     */
+    upload(productId, file, { alt = '', sort_order = 0, is_cover = false, onProgress } = {}) {
+      return new Promise((resolve, reject) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        if (alt)        formData.append('alt', alt);
+        formData.append('sort_order', String(sort_order));
+        formData.append('is_cover', String(is_cover));
+
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${API_URL}/images/products/${productId}/upload`);
+        xhr.setRequestHeader('Authorization', `Bearer ${Auth.getToken()}`);
+
+        if (typeof onProgress === 'function') {
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              onProgress(Math.round((e.loaded / e.total) * 100));
+            }
+          });
+        }
+
+        xhr.onload = () => {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(data);
+            } else {
+              const err = new Error(data.error || `Erro ${xhr.status}`);
+              err.status = xhr.status;
+              reject(err);
+            }
+          } catch {
+            reject(new Error('Resposta inválida do servidor.'));
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Erro de rede. Verifique sua conexão.'));
+        xhr.ontimeout = () => reject(new Error('Tempo limite de upload excedido.'));
+        xhr.timeout = 60000; // 60s
+
+        xhr.send(formData);
+      });
+    },
+
+    async list(productId) {
+      return get(`/images/products/${productId}`);
+    },
+
+    async delete(imageId) {
+      return del(`/images/${imageId}`, true);
+    },
+
+    async setCover(imageId) {
+      return patch(`/images/${imageId}/cover`, {}, true);
+    },
+
+    async update(imageId, payload) {
+      return patch(`/images/${imageId}`, payload, true);
+    },
+  },
+
   orders: {
     async create(payload) {
       return post('/orders', payload);
