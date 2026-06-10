@@ -1529,7 +1529,7 @@ ul { list-style: none; }
 @media (max-width: 768px) {
   .mobile-menu-btn { display: flex; }
   .main-nav {
-    position: fixed;
+    /*position: fixed;*/
     top: var(--header-h);
     left: 0;
     right: 0;
