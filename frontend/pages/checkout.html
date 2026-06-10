@@ -263,11 +263,12 @@
 <script src="../js/main.js"></script>
 <script>
 (async () => {
+  Cart.init();
   /* Redireciona se carrinho vazio */
   if (Cart.count() === 0) { window.location.href = 'loja.html'; return; }
 
   let currentStep    = 1;
-  let shippingCost   = null;
+  let shippingCost   = Cart.shippingCost();
   let selectedPayment = 'pix';
 
   /* === RENDER RESUMO === */
@@ -306,6 +307,29 @@
     document.getElementById('ckFrete').textContent = shippingCost === null
       ? 'A calcular' : shippingCost === 0 ? 'Grátis' : fmtPrice(shippingCost);
     document.getElementById('ckTotal').textContent = fmtPrice(total);
+  }
+
+  function renderShippingOption() {
+    const optEl = document.getElementById('shippingOptions');
+    const listEl = document.getElementById('shippingOptionsList');
+    if (!optEl || !listEl) return;
+    if (shippingCost === null) {
+      optEl.style.display = 'none';
+      listEl.innerHTML = '';
+      return;
+    }
+    optEl.style.display = 'block';
+    listEl.innerHTML = `
+      <label class="payment-method selected" style="margin-bottom:8px">
+        <input type="radio" name="shipping" value="${shippingCost}" checked>
+        <span>
+          <strong style="display:block;font-size:13px;margin-bottom:2px">
+            ${shippingCost === 0 ? 'Frete gratis' : `Sedex - ${fmtPrice(shippingCost)}`}
+          </strong>
+          <span style="font-size:12px;color:var(--color-text-light)">5 a 8 dias uteis</span>
+        </span>
+      </label>
+    `;
   }
 
   /* === STEPS === */
@@ -358,13 +382,28 @@
         setErr(id, msg); ok = false;
       }
     }
+    const cep = document.getElementById('shipZip')?.value.replace(/\D/g,'') || '';
+    if (cep.length !== 8) {
+      setErr('shipZip', 'CEP deve ter 8 digitos');
+      ok = false;
+    } else if (shippingCost === null || Cart.shippingZip() !== cep) {
+      setErr('shipZip', 'Calcule o frete para este CEP');
+      ok = false;
+    }
     return ok;
   }
 
   /* === BUSCA CEP === */
   window.doFetchCEP = async () => {
     const cep = document.getElementById('shipZip')?.value.replace(/\D/g,'');
-    if (cep?.length !== 8) return;
+    if (cep?.length !== 8) {
+      setErr('shipZip', 'Informe um CEP com 8 digitos');
+      shippingCost = null;
+      Cart.clearShipping();
+      renderShippingOption();
+      renderSummary();
+      return;
+    }
     try {
       const data = await api.payment.getShipping(cep);
       const addr = data.address;
@@ -374,26 +413,29 @@
         if (el && addr[key]) el.value = addr[key];
       });
       /* Calcula frete automático */
-      shippingCost = Cart.subtotal() >= data.shipping.free_from ? 0 : data.shipping.standard;
-      Cart.setShipping(shippingCost);
+      shippingCost = Cart.setShippingFromResponse(data, cep);
 
-      const optEl = document.getElementById('shippingOptions');
-      const listEl = document.getElementById('shippingOptionsList');
-      optEl.style.display = 'block';
-      listEl.innerHTML = `
-        <label class="payment-method selected" style="margin-bottom:8px">
-          <input type="radio" name="shipping" value="${shippingCost}" checked>
-          <span>
-            <strong style="display:block;font-size:13px;margin-bottom:2px">
-              ${shippingCost === 0 ? 'Frete grátis' : `Sedex — ${fmtPrice(shippingCost)}`}
-            </strong>
-            <span style="font-size:12px;color:var(--color-text-light)">5 a 8 dias úteis</span>
-          </span>
-        </label>
-      `;
+      renderShippingOption();
       renderSummary();
-    } catch { showToast('Erro ao buscar CEP.'); }
+    } catch (err) {
+      shippingCost = null;
+      Cart.clearShipping();
+      renderShippingOption();
+      renderSummary();
+      setErr('shipZip', err?.message || 'Nao foi possivel calcular o frete');
+      showToast(err?.message || 'Erro ao buscar CEP.');
+    }
   };
+
+  document.getElementById('shipZip')?.addEventListener('input', (e) => {
+    const cep = e.target.value.replace(/\D/g,'');
+    if (Cart.shippingZip() && Cart.shippingZip() !== cep) {
+      shippingCost = null;
+      Cart.clearShipping();
+      renderShippingOption();
+      renderSummary();
+    }
+  });
 
   /* === PAGAMENTO === */
   window.selectPayment = (radio) => {
@@ -541,6 +583,13 @@
       const el = document.getElementById(id);
       if (el && a[key]) el.value = key === 'zip' ? a[key].replace(/(\d{5})(\d{3})/,'$1-$2') : a[key];
     });
+    const selectedZip = (a.zip || '').replace(/\D/g,'');
+    if (!selectedZip || selectedZip !== Cart.shippingZip()) {
+      shippingCost = null;
+      Cart.clearShipping();
+      renderShippingOption();
+      renderSummary();
+    }
   };
 
   /* Preenche dados do usuário se logado */
@@ -554,6 +603,20 @@
     }
   }
 
+  const storedZip = Cart.shippingZip();
+  const storedAddress = Cart.shippingAddress();
+  if (storedZip) {
+    const zipEl = document.getElementById('shipZip');
+    if (zipEl) zipEl.value = storedZip.replace(/(\d{5})(\d{3})/,'$1-$2');
+  }
+  if (storedAddress) {
+    const map = { street:'shipStreet', neighborhood:'shipNeighborhood', city:'shipCity', state:'shipState' };
+    Object.entries(map).forEach(([key, id]) => {
+      const el = document.getElementById(id);
+      if (el && storedAddress[key]) el.value = storedAddress[key];
+    });
+  }
+  renderShippingOption();
   renderSummary();
 })();
 </script>

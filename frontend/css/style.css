@@ -15,10 +15,7 @@ body {
   color: #2C2A26;
   line-height: 1.6;
   overflow-x: hidden;
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding: 0;
 }
 
 img { max-width: 100%; height: auto; display: block; }
@@ -2098,13 +2095,6 @@ body {
 }
 
 /* === MOBILE ERGONOMICS OVERRIDES === */
-body {
-  padding-top: env(safe-area-inset-top);
-  padding-bottom: env(safe-area-inset-bottom);
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-}
-
 a,
 button,
 input,

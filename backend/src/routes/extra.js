@@ -393,14 +393,15 @@ paymentRouter.get('/shipping/:cep', async (req, res, next) => {
 
     const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
     const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (!resp.ok) return res.status(502).json({ error: 'Serviço de CEP indisponível.' });
     const addr = await resp.json();
     if (addr.erro) return res.status(404).json({ error: 'CEP não encontrado.' });
+    if (!addr.uf || !addr.localidade) return res.status(502).json({ error: 'Resposta de CEP inválida.' });
 
-    const { calcShipping } = require('../utils/helpers');
-    const heavyState = ['AM','PA','RR','AP','AC','RO','TO'].includes(addr.uf);
+    const { shippingStandardForState, SHIPPING_FREE_FROM } = require('../utils/helpers');
     res.json({
       address: { zip: cep, street: addr.logradouro, neighborhood: addr.bairro, city: addr.localidade, state: addr.uf },
-      shipping: { standard: heavyState ? 35.90 : 19.90, free_from: 500 }
+      shipping: { standard: shippingStandardForState(addr.uf), free_from: SHIPPING_FREE_FROM }
     });
   } catch (err) { next(err); }
 });
