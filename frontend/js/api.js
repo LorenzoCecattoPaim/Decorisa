@@ -97,11 +97,20 @@ const api = {
       if (limit) params.set('limit', limit);
       return get(`/products?${params}`);
     },
+    async adminList({ page, limit } = {}) {
+      const params = new URLSearchParams();
+      if (page) params.set('page', page);
+      if (limit) params.set('limit', limit);
+      return get(`/products/admin/list?${params}`, true);
+    },
     async get(slug) {
       return get(`/products/${slug}`);
     },
     async categories() {
       return get('/products/categories');
+    },
+    async customizationColors() {
+      return get('/products/customization-colors');
     },
     async create(payload) {
       return post('/products', payload, true);
