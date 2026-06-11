@@ -29,9 +29,7 @@ router.post('/',
       /* Valida e calcula produtos */
       const productIds = items.map(i => i.product_id);
       const { data: products, error: pErr } = await supabase
-        .from('products')
-        .select('id,name,sku,price,stock,production_days,allow_customization,allow_colors,allow_marble,allow_metallic,metallic_price,category:categories(slug)')
-        .in('id', productIds);
+        .from('products').select('id,name,sku,price,stock,production_days').in('id', productIds);
       if (pErr) throw pErr;
 
       let subtotal = 0;
@@ -41,51 +39,12 @@ router.post('/',
         const prod = products.find(p => p.id === item.product_id);
         if (!prod) return res.status(400).json({ error: `Produto não encontrado: ${item.product_id}` });
         if (prod.stock < item.quantity) return res.status(400).json({ error: `Estoque insuficiente para "${prod.name}".` });
-
-        // Personalização: calcular preço extra
-        let customization_price = 0;
-        let marble_enabled = false;
-        let metallic_type = null;
-        let selected_color = null;
-
-        const isCandle = prod.category?.slug === 'velas';
-
-        if (prod.allow_customization && !isCandle) {
-          // Cor
-          if (item.selected_color && prod.allow_colors) {
-            selected_color = item.selected_color;
-          }
-          // Marmorizado
-          if (item.marble_enabled && prod.allow_marble) {
-            marble_enabled = true;
-          }
-          // Folha metálica
-          if (item.metallic_type && item.metallic_type !== 'none' && prod.allow_metallic) {
-            const validTypes = ['ouro','prata','rose_gold'];
-            if (validTypes.includes(item.metallic_type)) {
-              metallic_type = item.metallic_type;
-              customization_price += Number(prod.metallic_price) || 15;
-            }
-          }
-        }
-
-        const unit_price_with_custom = +(Number(prod.price) + customization_price).toFixed(2);
-        const total_price = +(unit_price_with_custom * item.quantity).toFixed(2);
+        const total_price = +(prod.price * item.quantity).toFixed(2);
         subtotal += total_price;
-
         orderItems.push({
-          product_id: prod.id,
-          product_name: prod.name,
-          product_sku: prod.sku,
-          variant_color: item.variant_color || null,
-          variant_size: item.variant_size || null,
-          quantity: item.quantity,
-          unit_price: Number(prod.price),
-          total_price,
-          selected_color,
-          marble_enabled,
-          metallic_type,
-          customization_price,
+          product_id: prod.id, product_name: prod.name, product_sku: prod.sku,
+          variant_color: item.variant_color || null, variant_size: item.variant_size || null,
+          quantity: item.quantity, unit_price: prod.price, total_price,
         });
       }
 
@@ -158,7 +117,7 @@ router.get('/mine', auth, async (req, res, next) => {
   try {
     const { data, error } = await supabase
       .from('orders')
-      .select('id,order_number,status,payment_status,total,created_at,order_items(product_name,quantity,unit_price,selected_color,marble_enabled,metallic_type,customization_price)')
+      .select('id,order_number,status,payment_status,total,created_at,order_items(product_name,quantity,unit_price)')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
     if (error) throw error;
@@ -225,6 +184,7 @@ router.patch('/:id/status', auth, adminOnly,
 
       if (error || !order) return res.status(404).json({ error: 'Pedido não encontrado.' });
 
+      /* Envia e-mail de envio */
       if (status === 'shipped') {
         mailer.sendOrderShipped({
           to: order.customer_email, name: order.customer_name,

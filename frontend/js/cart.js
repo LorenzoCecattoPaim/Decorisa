@@ -1,7 +1,6 @@
 /**
  * DECORISA - cart.js
  * Carrinho de compras com persistencia localStorage.
- * Suporte a personalizações: cor, marmorizado, folha metálica.
  */
 
 const Cart = (() => {
@@ -14,16 +13,8 @@ const Cart = (() => {
   let _shippingQuote = null;
   let _initialized = false;
 
-  // Mapa de label para tipo
-  const METALLIC_LABELS = {
-    none: 'Nenhuma',
-    ouro: 'Folha Ouro',
-    prata: 'Folha Prata',
-    rose_gold: 'Folha Rosé Gold',
-  };
-
   function subtotal() {
-    return +_items.reduce((s, i) => s + (i.price + (i.customization_price || 0)) * i.qty, 0).toFixed(2);
+    return +_items.reduce((s, i) => s + i.price * i.qty, 0).toFixed(2);
   }
 
   function discount() {
@@ -82,17 +73,8 @@ const Cart = (() => {
     syncShippingResult();
   }
 
-  /**
-   * add(product, qty, color, size, customization)
-   * customization: { selected_color, marble_enabled, metallic_type, customization_price }
-   */
-  function add(product, qty = 1, color = null, size = null, customization = null) {
-    const c = customization || {};
-    const metallicKey = c.metallic_type || 'none';
-    const marbleKey   = c.marble_enabled ? '1' : '0';
-    const colorKey    = c.selected_color || color || 'none';
-    const key = `${product.id}-${colorKey}-${size || 'none'}-${marbleKey}-${metallicKey}`;
-
+  function add(product, qty = 1, color = null, size = null) {
+    const key = `${product.id}-${color}-${size}`;
     const ex = _items.find(i => i.key === key);
     if (ex) {
       ex.qty = Math.min(ex.qty + qty, product.stock || 99);
@@ -106,14 +88,9 @@ const Cart = (() => {
         price: Number(product.price),
         stock: product.stock || 99,
         qty,
-        color: color || c.selected_color || null,
+        color,
         size,
         image: product.images?.[0]?.url || null,
-        // Personalização
-        selected_color:       c.selected_color || null,
-        marble_enabled:       c.marble_enabled || false,
-        metallic_type:        c.metallic_type || null,
-        customization_price:  Number(c.customization_price) || 0,
       });
     }
     save();
@@ -250,31 +227,6 @@ const Cart = (() => {
     if (resultEl && _shipping !== null) _setResult(resultEl, _shippingMessage(), '#4A7A4A');
   }
 
-  /** Linha de personalização para exibir no carrinho */
-  function _buildCustomizationLine(item) {
-    const parts = [];
-    if (item.selected_color) {
-      parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.selected_color)}"></span>${item.selected_color}</span>`);
-    }
-    if (item.marble_enabled) {
-      parts.push(`<span class="cart-custom-tag">Marmorizado</span>`);
-    }
-    if (item.metallic_type && item.metallic_type !== 'none') {
-      parts.push(`<span class="cart-custom-tag">${METALLIC_LABELS[item.metallic_type] || item.metallic_type}</span>`);
-    }
-    if (!parts.length) return '';
-    return `<div class="cart-customization">${parts.join('')}</div>`;
-  }
-
-  // Tenta recuperar hex de uma cor armazenada
-  function _getColorHex(colorName) {
-    const colorMap = {
-      'Branco': '#F9F7F4', 'Bege': '#E8DFD0', 'Areia': '#C9B99A',
-      'Cinza Claro': '#C0BBB4', 'Cinza Escuro': '#6B6560', 'Preto': '#2C2A26',
-    };
-    return colorMap[colorName] || '#CCC';
-  }
-
   function _renderDrawer() {
     const itemsEl = document.getElementById('cartItems');
     const emptyEl = document.getElementById('cartEmpty');
@@ -291,10 +243,7 @@ const Cart = (() => {
     emptyEl?.style && (emptyEl.style.display = 'none');
     footerEl?.style && (footerEl.style.display = 'block');
 
-    itemsEl.innerHTML = _items.map(item => {
-      const unitTotal = (item.price + (item.customization_price || 0)) * item.qty;
-      const customLine = _buildCustomizationLine(item);
-      return `
+    itemsEl.innerHTML = _items.map(item => `
       <li class="cart-item">
         <div class="cart-item-img" aria-hidden="true">
           ${item.image
@@ -303,8 +252,7 @@ const Cart = (() => {
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
-          ${item.size ? `<div class="cart-item-variant">${item.size}</div>` : ''}
-          ${customLine}
+          <div class="cart-item-variant">${[item.size, item.color ? '*' : ''].filter(Boolean).join(' ')}</div>
           <div class="cart-item-qty">
             <button onclick="Cart.changeQty('${item.key}',-1)" aria-label="Diminuir">-</button>
             <span>${item.qty}</span>
@@ -312,9 +260,9 @@ const Cart = (() => {
           </div>
           <button class="cart-item-remove" onclick="Cart.remove('${item.key}')">Remover</button>
         </div>
-        <div class="cart-item-price">${_fmt(unitTotal)}</div>
+        <div class="cart-item-price">${_fmt(item.price * item.qty)}</div>
       </li>
-    `}).join('');
+    `).join('');
 
     _qs('cartSubtotal', _fmt(subtotal()));
     const d = discount();
@@ -412,14 +360,10 @@ const Cart = (() => {
   function getCheckoutPayload() {
     return {
       items: _items.map(i => ({
-        product_id:    i.id,
-        quantity:      i.qty,
+        product_id: i.id,
+        quantity: i.qty,
         variant_color: i.color,
-        variant_size:  i.size,
-        // Personalização
-        selected_color:  i.selected_color || null,
-        marble_enabled:  i.marble_enabled || false,
-        metallic_type:   i.metallic_type || 'none',
+        variant_size: i.size,
       })),
       coupon_code: _coupon?.code || null,
     };
@@ -452,7 +396,6 @@ const Cart = (() => {
     getItems: () => _items,
     getCheckoutPayload,
     getCoupon: () => _coupon,
-    METALLIC_LABELS,
   };
 })();
 

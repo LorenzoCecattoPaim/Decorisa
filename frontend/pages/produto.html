@@ -203,40 +203,6 @@
   let selectedSize  = null;
   let localQty      = 1;
 
-  // Estado de personalização
-  let customColor    = null;  // nome da cor selecionada
-  let customColorHex = null;  // hex da cor
-  let marbleEnabled  = false;
-  let metallicType   = 'none'; // 'none' | 'ouro' | 'prata' | 'rose_gold'
-  let metallicPrice  = 0;
-
-  const METALLIC_LABELS = {
-    none: 'Nenhuma',
-    ouro: 'Folha Ouro',
-    prata: 'Folha Prata',
-    rose_gold: 'Folha Rosé Gold',
-  };
-
-  function updatePriceDisplay() {
-    const base = Number(product?.price || 0);
-    const extra = (metallicType && metallicType !== 'none') ? metallicPrice : 0;
-    const total = base + extra;
-    const el = document.getElementById('dynamicPrice');
-    const extraEl = document.getElementById('dynamicPriceExtra');
-    const totalEl = document.getElementById('dynamicPriceTotal');
-    if (!el) return;
-    el.textContent = fmtPrice(base);
-    if (extra > 0) {
-      if (extraEl) extraEl.textContent = `+ ${fmtPrice(extra)} (${METALLIC_LABELS[metallicType]})`;
-      if (totalEl) totalEl.textContent = fmtPrice(total);
-      document.getElementById('priceExtraRow')?.style && (document.getElementById('priceExtraRow').style.display = 'flex');
-    } else {
-      if (extraEl) extraEl.textContent = '';
-      if (totalEl) totalEl.textContent = fmtPrice(total);
-      document.getElementById('priceExtraRow')?.style && (document.getElementById('priceExtraRow').style.display = 'none');
-    }
-  }
-
   try {
     const data = await api.products.get(slug);
     product = data.product;
@@ -259,13 +225,6 @@
   const sizes  = (product.variants || []).filter(v => v.type === 'size');
   selectedColor = colors[0]?.value || null;
   selectedSize  = sizes[0]?.value  || null;
-
-  /* Inicializa personalização */
-  metallicPrice = Number(product.metallic_price) || 15;
-  if (product.allow_customization && product.allow_colors && product.available_colors?.length) {
-    customColor    = product.available_colors[0].name;
-    customColorHex = product.available_colors[0].hex;
-  }
 
   /* Imagens */
   const images = product.images?.length
@@ -352,80 +311,33 @@
         <p class="produto-desc">${product.description || ''}</p>
         <div class="produto-artesanal">"Cada peça é produzida artesanalmente, tornando cada item único."</div>
 
-        ${product.allow_customization ? `
-        <section class="product-customize-section" id="customizeSection">
-          <div class="eyebrow"><span class="eyebrow-line"></span>Personalize sua peça</div>
-          <h2 class="product-customize-title">Faça sua escolha de <em>acabamento</em></h2>
-
-          ${product.allow_colors && product.available_colors?.length ? `
-          <div class="customize-group" id="groupCor">
-            <div class="customize-group-label">
-              Cor
-              <span class="selected-value" id="selectedColorLabel">${product.available_colors[0]?.name || ''}</span>
+        <section class="product-personalize" style="margin-bottom:28px;padding:24px;border:1px solid rgba(44,42,38,0.08);border-radius:24px;background:rgba(255,255,255,0.74)">
+          <div class="eyebrow"><span class="eyebrow-line"></span>Personalize sua Peça</div>
+          <h2 style="font-family:var(--font-display);font-size:28px;font-weight:300;margin-bottom:16px">Acabamentos, prazo e envio pensados para a sua encomenda.</h2>
+          <div class="personalize-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+            <div>
+              <strong style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Acabamentos disponíveis</strong>
+              <ul style="font-size:14px;line-height:1.8;color:var(--color-text-muted)">
+                <li>Liso</li>
+                <li>Colorido</li>
+                <li>Marmorizado</li>
+                <li>Folha dourada (+R$15)</li>
+                <li>Folha prateada (+R$15)</li>
+                <li>Folha rosé (+R$15)</li>
+              </ul>
             </div>
-            <div class="color-swatches">
-              ${product.available_colors.map((c, i) => `
-                <button class="color-swatch ${i===0?'selected':''}"
-                  data-name="${c.name}"
-                  data-hex="${c.hex}"
-                  style="background:${c.hex}"
-                  title="${c.name}"
-                  onclick="selectCustomColor(this)"
-                  aria-label="${c.name}"
-                  aria-pressed="${i===0}">
-                </button>
-              `).join('')}
-            </div>
-          </div>
-          ` : ''}
-
-          ${product.allow_marble ? `
-          <div class="customize-group" id="groupMarmore">
-            <div class="customize-group-label">Efeito Marmorizado</div>
-            <div class="marble-toggle-wrap">
-              <label class="marble-toggle" aria-label="Efeito Marmorizado">
-                <input type="checkbox" id="marbleToggle" onchange="toggleMarble(this)">
-                <span class="marble-toggle-track"></span>
-                <span class="marble-toggle-knob"></span>
-              </label>
-              <span class="marble-toggle-desc" id="marbleDesc">Não — acabamento liso</span>
-            </div>
-          </div>
-          ` : ''}
-
-          ${product.allow_metallic ? `
-          <div class="customize-group" id="groupMetallic">
-            <div class="customize-group-label">Folha Metálica</div>
-            <div class="metallic-options">
-              <button class="metallic-opt selected" data-type="none" onclick="selectMetallic(this)">Nenhuma</button>
-              <button class="metallic-opt" data-type="ouro" onclick="selectMetallic(this)">
-                ✦ Ouro <span class="metallic-extra">+${fmtPrice(product.metallic_price || 15)}</span>
-              </button>
-              <button class="metallic-opt" data-type="prata" onclick="selectMetallic(this)">
-                ✦ Prata <span class="metallic-extra">+${fmtPrice(product.metallic_price || 15)}</span>
-              </button>
-              <button class="metallic-opt" data-type="rose_gold" onclick="selectMetallic(this)">
-                ✦ Rosé Gold <span class="metallic-extra">+${fmtPrice(product.metallic_price || 15)}</span>
-              </button>
-            </div>
-          </div>
-          ` : ''}
-
-          <div class="customize-price-summary">
-            <div class="customize-price-row">
-              <span>Preço base</span>
-              <span id="dynamicPrice">${fmtPrice(product.price)}</span>
-            </div>
-            <div class="customize-price-row extra" id="priceExtraRow" style="display:none">
-              <span id="dynamicPriceExtra"></span>
-            </div>
-            <div class="customize-price-row total">
-              <span>Total por peça</span>
-              <strong id="dynamicPriceTotal">${fmtPrice(product.price)}</strong>
+            <div>
+              <strong style="display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Informações</strong>
+              <ul style="font-size:14px;line-height:1.8;color:var(--color-text-muted)">
+                <li><strong style="color:var(--color-text)">Prazo de produção:</strong> 7 a 20 dias úteis</li>
+                <li>Peças produzidas sob encomenda.</li>
+                <li>Enviamos para todo o Brasil.</li>
+                <li>Pagamento via PIX, dinheiro e cartão.</li>
+                <li>Cartão possui acréscimo referente à taxa da maquininha.</li>
+              </ul>
             </div>
           </div>
         </section>
-        ` : ''}
 
         ${colors.length > 0 ? `
           <div class="option-group">
@@ -517,9 +429,6 @@
   document.getElementById('produtoSkeleton').style.display = 'none';
   document.getElementById('produtoContent').style.display  = 'block';
 
-  /* Inicializa display de preço com personalização */
-  updatePriceDisplay();
-
   /* Avaliações */
   const reviewsSec = document.getElementById('reviewsSection');
   const reviewsGrid = document.getElementById('reviewsGrid');
@@ -588,40 +497,7 @@
   };
 
   window.addToCartNow = () => {
-    const customization = product.allow_customization ? {
-      selected_color:      customColor || null,
-      marble_enabled:      marbleEnabled,
-      metallic_type:       metallicType !== 'none' ? metallicType : null,
-      customization_price: metallicType && metallicType !== 'none' ? metallicPrice : 0,
-    } : null;
-    Cart.add(product, localQty, selectedColor, selectedSize, customization);
-  };
-
-  window.selectCustomColor = (el) => {
-    document.querySelectorAll('.color-swatch').forEach(c => {
-      c.classList.remove('selected');
-      c.setAttribute('aria-pressed', 'false');
-    });
-    el.classList.add('selected');
-    el.setAttribute('aria-pressed', 'true');
-    customColor = el.dataset.name;
-    customColorHex = el.dataset.hex;
-    const lbl = document.getElementById('selectedColorLabel');
-    if (lbl) lbl.textContent = customColor;
-  };
-
-  window.toggleMarble = (checkbox) => {
-    marbleEnabled = checkbox.checked;
-    const desc = document.getElementById('marbleDesc');
-    if (desc) desc.textContent = marbleEnabled ? 'Sim — efeito marmorizado' : 'Não — acabamento liso';
-    updatePriceDisplay();
-  };
-
-  window.selectMetallic = (el) => {
-    document.querySelectorAll('.metallic-opt').forEach(m => m.classList.remove('selected'));
-    el.classList.add('selected');
-    metallicType = el.dataset.type;
-    updatePriceDisplay();
+    Cart.add(product, localQty, selectedColor, selectedSize);
   };
 
   window.calcFreteProduct = async () => {
