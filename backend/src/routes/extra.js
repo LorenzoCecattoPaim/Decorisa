@@ -385,83 +385,25 @@ paymentRouter.post('/mp/webhook', async (req, res) => {
   }
 });
 
-/* ================================================================
-   Frete — GET /api/payment/shipping/:cep
-   Integra ViaCEP para dados do endereço e calcula o frete.
-================================================================ */
+/* Frete — integra ViaCEP para dados do endereço */
 paymentRouter.get('/shipping/:cep', async (req, res, next) => {
   try {
-    // 1. Normaliza e valida o CEP
-    const cep = String(req.params.cep).replace(/\D/g, '');
+    const cep = req.params.cep.replace(/\D/g,'');
+    if (cep.length !== 8) return res.status(400).json({ error: 'CEP inválido.' });
 
-    if (cep.length === 0) {
-      return res.status(400).json({ error: 'CEP não informado.' });
-    }
-    if (cep.length !== 8) {
-      return res.status(400).json({ error: 'CEP inválido. Informe 8 dígitos numéricos.' });
-    }
-    // Rejeita CEPs claramente inválidos (todos iguais: 00000000, 99999999)
-    if (/^(\d)\1{7}$/.test(cep)) {
-      return res.status(400).json({ error: 'CEP inválido.' });
-    }
+    const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
+    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    if (!resp.ok) return res.status(502).json({ error: 'Serviço de CEP indisponível.' });
+    const addr = await resp.json();
+    if (addr.erro) return res.status(404).json({ error: 'CEP não encontrado.' });
+    if (!addr.uf || !addr.localidade) return res.status(502).json({ error: 'Resposta de CEP inválida.' });
 
-    // 2. Consulta ViaCEP com timeout de 5s
-    const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
-
-    let addr;
-    try {
-      const controller = new AbortController();
-      const timeout    = setTimeout(() => controller.abort(), 5000);
-      const resp       = await fetch(
-        `https://viacep.com.br/ws/${cep}/json/`,
-        { signal: controller.signal }
-      );
-      clearTimeout(timeout);
-
-      if (resp.status === 400) {
-        return res.status(400).json({ error: 'CEP inválido.' });
-      }
-      if (!resp.ok) {
-        return res.status(502).json({ error: 'Serviço de consulta de CEP indisponível. Tente novamente.' });
-      }
-
-      addr = await resp.json();
-    } catch (fetchErr) {
-      if (fetchErr.name === 'AbortError') {
-        return res.status(504).json({ error: 'Consulta de CEP expirou. Verifique sua conexão e tente novamente.' });
-      }
-      return res.status(502).json({ error: 'Não foi possível consultar o CEP. Tente novamente.' });
-    }
-
-    // 3. Valida resposta do ViaCEP
-    if (addr.erro === true || addr.erro === 'true') {
-      return res.status(404).json({ error: 'CEP não encontrado. Verifique o número e tente novamente.' });
-    }
-    if (!addr.uf) {
-      return res.status(502).json({ error: 'Resposta de CEP inválida. Tente novamente.' });
-    }
-
-    // 4. Calcula frete
     const { shippingStandardForState, SHIPPING_FREE_FROM } = require('../utils/helpers');
-    const standard = shippingStandardForState(addr.uf);
-
-    return res.json({
-      address: {
-        zip:          cep,
-        street:       addr.logradouro   || '',
-        neighborhood: addr.bairro       || '',
-        city:         addr.localidade   || '',
-        state:        addr.uf,
-      },
-      shipping: {
-        standard,
-        free_from: SHIPPING_FREE_FROM,
-      },
+    res.json({
+      address: { zip: cep, street: addr.logradouro, neighborhood: addr.bairro, city: addr.localidade, state: addr.uf },
+      shipping: { standard: shippingStandardForState(addr.uf), free_from: SHIPPING_FREE_FROM }
     });
-
-  } catch (err) {
-    next(err);
-  }
+  } catch (err) { next(err); }
 });
 
 module.exports = { couponRouter, newsletterRouter, addressRouter, adminRouter, paymentRouter };
