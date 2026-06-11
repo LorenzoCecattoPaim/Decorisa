@@ -249,6 +249,50 @@
           </div>
 
           <!-- ============================================================
+               PERSONALIZAÇÃO DO PRODUTO
+               ============================================================ -->
+          <div class="customization-admin-section">
+            <div class="customization-admin-title">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              Personalização da peça
+              <span id="candles-note" style="display:none;font-size:9px;color:#A33;letter-spacing:0;text-transform:none">— Produtos de velas não permitem personalização</span>
+            </div>
+
+            <div class="customization-admin-grid">
+              <label class="customization-checkbox-label">
+                <input type="checkbox" id="pAllowCustom" onchange="onAllowCustomChange(this)">
+                Permitir personalização
+              </label>
+              <div></div>
+              <label class="customization-checkbox-label" id="labelAllowColors">
+                <input type="checkbox" id="pAllowColors">
+                Permitir escolha de cor
+              </label>
+              <label class="customization-checkbox-label" id="labelAllowMarble">
+                <input type="checkbox" id="pAllowMarble">
+                Permitir marmorizado
+              </label>
+              <label class="customization-checkbox-label" id="labelAllowMetallic">
+                <input type="checkbox" id="pAllowMetallic" onchange="onAllowMetallicChange(this)">
+                Permitir folha metálica
+              </label>
+              <div class="form-group" id="metallicPriceGroup" style="margin-bottom:0">
+                <label style="font-size:11px">Valor extra folha (R$)</label>
+                <input type="number" id="pMetallicPrice" step="0.01" min="0" value="15" placeholder="15.00" style="margin-top:4px">
+              </div>
+            </div>
+
+            <div id="colorsPickerGroup">
+              <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Cores disponíveis para este produto</div>
+              <div class="admin-colors-palette" id="adminColorsPalette">
+                <span style="font-size:12px;color:var(--color-text-light)">Carregando cores...</span>
+              </div>
+              <p style="font-size:11px;color:var(--color-text-light);margin-top:8px">Clique para selecionar/deselecionar</p>
+            </div>
+          </div>
+          <!-- / FIM PERSONALIZAÇÃO -->
+
+          <!-- ============================================================
                SEÇÃO DE IMAGENS DO PRODUTO
                ============================================================ -->
           <div class="img-upload-section">
@@ -517,14 +561,17 @@
                 <td><span style="font-size:11px;color:var(--color-text-light)">${o.payment_status}</span></td>
                 <td style="font-size:12px;color:var(--color-text-light)">${fmtDate(o.created_at)}</td>
                 <td>
-                  <select onchange="updateOrderStatus('${o.id}', this.value)" style="font-size:11px;border:0.5px solid var(--color-border-mid);padding:4px 8px;background:var(--color-bg);font-family:var(--font-body);color:var(--color-text);cursor:pointer">
-                    <option value="">Alterar</option>
-                    <option value="confirmed">Confirmado</option>
-                    <option value="in_production">Em produção</option>
-                    <option value="shipped">Enviado</option>
-                    <option value="delivered">Entregue</option>
-                    <option value="cancelled">Cancelado</option>
-                  </select>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <button onclick="viewOrderItems('${o.id}')" style="font-size:10px;letter-spacing:0.06em;text-transform:uppercase;background:none;border:0.5px solid var(--color-border-mid);padding:4px 10px;cursor:pointer;font-family:var(--font-body);color:var(--color-text-muted)">Itens</button>
+                    <select onchange="updateOrderStatus('${o.id}', this.value)" style="font-size:11px;border:0.5px solid var(--color-border-mid);padding:4px 8px;background:var(--color-bg);font-family:var(--font-body);color:var(--color-text);cursor:pointer">
+                      <option value="">Alterar</option>
+                      <option value="confirmed">Confirmado</option>
+                      <option value="in_production">Em produção</option>
+                      <option value="shipped">Enviado</option>
+                      <option value="delivered">Entregue</option>
+                      <option value="cancelled">Cancelado</option>
+                    </select>
+                  </div>
                 </td>
               </tr>
             `).join('')}
@@ -550,17 +597,81 @@
     } catch (err) { showToast(err.message); }
   };
 
+  window.viewOrderItems = async (id) => {
+    try {
+      const { order } = await api.orders.get(id);
+      const METALLIC_LABELS = { ouro:'Folha Ouro', prata:'Folha Prata', rose_gold:'Folha Rosé Gold' };
+      const modal = document.getElementById('orderItemsModal') || (() => {
+        const m = document.createElement('div');
+        m.id = 'orderItemsModal';
+        m.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(44,42,38,0.5);backdrop-filter:blur(4px)';
+        m.onclick = (e) => { if (e.target === m) m.remove(); };
+        document.body.appendChild(m);
+        return m;
+      })();
+
+      modal.innerHTML = `
+        <div style="background:var(--color-bg);border-radius:20px;padding:32px;max-width:580px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
+          <button onclick="document.getElementById('orderItemsModal').remove()" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-muted)">×</button>
+          <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:6px">Pedido ${order.order_number}</div>
+          <div style="font-size:18px;font-family:var(--font-display);font-weight:300;margin-bottom:24px">${order.customer_name}</div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            ${(order.order_items || []).map(i => {
+              const customs = [];
+              if (i.selected_color) customs.push({ label: 'Cor', value: i.selected_color });
+              if (i.marble_enabled) customs.push({ label: 'Marmorizado', value: 'Sim' });
+              if (i.metallic_type && i.metallic_type !== 'none') customs.push({ label: 'Folha', value: METALLIC_LABELS[i.metallic_type] || i.metallic_type });
+              return `
+                <div style="padding:16px;border:0.5px solid var(--color-border);border-radius:12px">
+                  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:${customs.length?'12px':'0'}">
+                    <div>
+                      <div style="font-size:13px;font-weight:500">${i.product_name}</div>
+                      <div style="font-size:11px;color:var(--color-text-light)">SKU: ${i.product_sku || '—'} · Qtd: ${i.quantity}</div>
+                    </div>
+                    <div style="text-align:right">
+                      <div style="font-size:13px;font-weight:500">${fmtPrice(i.total_price)}</div>
+                      ${i.customization_price > 0 ? `<div style="font-size:10px;color:var(--color-text-light)">+${fmtPrice(i.customization_price)} personalização</div>` : ''}
+                    </div>
+                  </div>
+                  ${customs.length ? `
+                  <div style="display:flex;flex-wrap:wrap;gap:6px">
+                    ${customs.map(c => `
+                      <span class="order-customization-badge">${c.label}: ${c.value}</span>
+                    `).join('')}
+                  </div>` : ''}
+                </div>
+              `;
+            }).join('')}
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:0.5px solid var(--color-border);display:flex;justify-content:space-between;font-size:13px">
+            <span style="color:var(--color-text-muted)">Total do pedido</span>
+            <strong>${fmtPrice(order.total)}</strong>
+          </div>
+        </div>
+      `;
+      modal.style.display = 'flex';
+    } catch (err) { showToast('Erro ao carregar detalhes: ' + err.message); }
+  };
+
   /* === PRODUTOS === */
   async function loadProdutos() {
     const el = document.getElementById('productsTable');
-    // Popula select de categorias dinamicamente
     await populateCatSelect();
+    await loadAdminColors(); // Carrega paleta de cores para o formulário
     try {
-      const { products, total } = await api.products.list({ limit: 50 });
+      // Usa endpoint admin/list que retorna campos de personalização
+      let products, total;
+      try {
+        const r = await api.products.adminList({ limit: 50 });
+        products = r.products; total = r.total;
+      } catch {
+        const r = await api.products.list({ limit: 50 });
+        products = r.products; total = r.total;
+      }
       document.getElementById('prodCountLabel').textContent = `${total} produtos`;
       el.innerHTML = `
         <table class="admin-table">
-          <thead><tr><th>SKU</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Status</th><th>Ações</th></tr></thead>
+          <thead><tr><th>SKU</th><th>Nome</th><th>Categoria</th><th>Preço</th><th>Estoque</th><th>Custom.</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody>
             ${(products || []).map(p => `
               <tr>
@@ -569,9 +680,12 @@
                 <td style="text-transform:capitalize">${p.category?.name || '—'}</td>
                 <td>${Number(p.price) === 0 ? 'Sob consulta' : fmtPrice(p.price)}</td>
                 <td>${p.stock < 5 ? `<span style="color:#8A5A18">${p.stock}</span>` : p.stock}</td>
+                <td>${p.allow_customization
+                  ? '<span style="color:#4A7A4A;font-size:10px">✓ Sim</span>'
+                  : '<span style="color:var(--color-text-light);font-size:10px">—</span>'}</td>
                 <td>${p.active ? '<span style="color:#4A7A4A;font-size:11px">Ativo</span>' : '<span style="color:#A33;font-size:11px">Inativo</span>'}</td>
                 <td style="display:flex;gap:10px">
-                  <button onclick="editProduct('${p.id}','${p.name}','${p.sku}','${p.slug}',${p.price},${p.stock},'${p.description||''}',${p.featured},${p.active})" style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;background:none;border:none;cursor:pointer;color:var(--color-text-muted);font-family:var(--font-body)">Editar</button>
+                  <button onclick='editProduct(${JSON.stringify(p.id)},${JSON.stringify(p.name)},${JSON.stringify(p.sku)},${JSON.stringify(p.slug)},${p.price},${p.stock},${JSON.stringify(p.description||"")},${p.featured},${p.active},${JSON.stringify(p)})' style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;background:none;border:none;cursor:pointer;color:var(--color-text-muted);font-family:var(--font-body)">Editar</button>
                   <button onclick="toggleProduct('${p.id}',${!p.active})" style="font-size:10px;letter-spacing:0.08em;text-transform:uppercase;background:none;border:none;cursor:pointer;color:#A33;font-family:var(--font-body)">${p.active ? 'Desativar' : 'Ativar'}</button>
                 </td>
               </tr>
@@ -582,7 +696,7 @@
     } catch { el.innerHTML = '<p style="color:#A33;font-size:13px">Erro ao carregar produtos.</p>'; }
   }
 
-  window.editProduct = (id, name, sku, slug, price, stock, desc, featured, active) => {
+  window.editProduct = (id, name, sku, slug, price, stock, desc, featured, active, productData) => {
     switchPanel(document.querySelector('[data-panel=cadastro]'));
     document.getElementById('cadastroTitle').textContent = 'Editar produto';
     document.getElementById('editingProductId').value = id;
@@ -595,7 +709,35 @@
     document.getElementById('pFeatured').checked = featured;
     document.getElementById('pActive').checked   = active;
     document.getElementById('produtoSaveBtn').textContent = 'Atualizar produto';
-    imgInitForm(id); // Carregar imagens existentes do produto
+    imgInitForm(id);
+
+    // Preencher campos de personalização
+    if (productData) {
+      const ac = document.getElementById('pAllowCustom');
+      const co = document.getElementById('pAllowColors');
+      const ma = document.getElementById('pAllowMarble');
+      const me = document.getElementById('pAllowMetallic');
+      const mp = document.getElementById('pMetallicPrice');
+      if (ac) ac.checked = productData.allow_customization || false;
+      if (co) co.checked = productData.allow_colors || false;
+      if (ma) ma.checked = productData.allow_marble || false;
+      if (me) me.checked = productData.allow_metallic || false;
+      if (mp) mp.value   = productData.metallic_price || 15;
+      onAllowCustomChange(ac);
+      onAllowMetallicChange(me);
+
+      // Selecionar cores disponíveis
+      const availableIds = (productData.available_colors || []).map(c => c.id);
+      document.querySelectorAll('.admin-color-chip').forEach(chip => {
+        chip.classList.toggle('selected', availableIds.includes(chip.dataset.id));
+      });
+    }
+
+    // Verificar se categoria é velas
+    const catSel = document.getElementById('pCategory');
+    if (catSel && productData?.category?.slug === 'velas') {
+      showCandlesNote(true);
+    }
   };
 
   window.toggleProduct = async (id, active) => {
@@ -625,16 +767,28 @@
       description: document.getElementById('pDesc').value || null,
       featured: document.getElementById('pFeatured').checked,
       active:   document.getElementById('pActive').checked,
+      // Personalização
+      allow_customization: document.getElementById('pAllowCustom')?.checked || false,
+      allow_colors:        document.getElementById('pAllowColors')?.checked || false,
+      allow_marble:        document.getElementById('pAllowMarble')?.checked || false,
+      allow_metallic:      document.getElementById('pAllowMetallic')?.checked || false,
+      metallic_price:      parseFloat(document.getElementById('pMetallicPrice')?.value) || 15,
     };
+
+    // Coletar cores selecionadas
+    const selectedColorIds = [];
+    document.querySelectorAll('.admin-color-chip.selected').forEach(chip => {
+      selectedColorIds.push(chip.dataset.id);
+    });
+    payload.available_color_ids = selectedColorIds;
+
     try {
       let result;
       if (editId) {
         result = await api.products.update(editId, payload);
-        // Upload da imagem pendente (se houver) para produto já existente
         await imgUploadPendingIfAny(editId);
       } else {
         result = await api.products.create(payload);
-        // Upload da imagem pendente (se houver) para o produto recém-criado
         if (result?.product?.id) {
           await imgUploadPendingIfAny(result.product.id);
         }
@@ -654,7 +808,12 @@
     document.getElementById('editingProductId').value = '';
     document.getElementById('cadastroTitle').textContent = 'Novo produto';
     document.getElementById('produtoSaveBtn').textContent = 'Salvar produto';
-    imgInitForm(null); // Limpar área de imagens
+    imgInitForm(null);
+    // Reset personalização
+    document.querySelectorAll('.admin-color-chip').forEach(c => c.classList.remove('selected'));
+    const ac = document.getElementById('pAllowCustom');
+    if (ac) { ac.checked = false; onAllowCustomChange(ac); }
+    showCandlesNote(false);
   };
 
   /* === CLIENTES === */
@@ -1229,6 +1388,86 @@
     if (!imgState.pendingFile) return;
     await imgUploadNow(productId, imgState.pendingFile);
   }
+
+  /* ================================================================
+     PERSONALIZAÇÃO — funções auxiliares
+     ================================================================ */
+
+  // Controla visibilidade dos sub-checkboxes de personalização
+  window.onAllowCustomChange = (checkbox) => {
+    const allowed = checkbox?.checked;
+    const subFields = ['labelAllowColors','labelAllowMarble','labelAllowMetallic','colorsPickerGroup'];
+    subFields.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.opacity = allowed ? '1' : '0.4';
+    });
+    document.getElementById('labelAllowColors')?.querySelector('input')?.toggleAttribute('disabled', !allowed);
+    document.getElementById('labelAllowMarble')?.querySelector('input')?.toggleAttribute('disabled', !allowed);
+    document.getElementById('labelAllowMetallic')?.querySelector('input')?.toggleAttribute('disabled', !allowed);
+    if (!allowed) {
+      document.getElementById('pAllowColors').checked  = false;
+      document.getElementById('pAllowMarble').checked  = false;
+      document.getElementById('pAllowMetallic').checked = false;
+      document.getElementById('metallicPriceGroup').style.opacity = '0.4';
+    }
+  };
+
+  window.onAllowMetallicChange = (checkbox) => {
+    const el = document.getElementById('metallicPriceGroup');
+    if (el) el.style.opacity = checkbox?.checked ? '1' : '0.4';
+  };
+
+  window.showCandlesNote = (show) => {
+    const note = document.getElementById('candles-note');
+    if (note) note.style.display = show ? 'inline' : 'none';
+  };
+
+  // Monitora mudança de categoria para desabilitar personalização em Velas
+  document.getElementById('pCategory')?.addEventListener('change', async function() {
+    try {
+      const { categories } = await api.products.categories();
+      const cat = categories.find(c => c.id === this.value);
+      if (cat?.slug === 'velas') {
+        document.getElementById('pAllowCustom').checked = false;
+        onAllowCustomChange(document.getElementById('pAllowCustom'));
+        showCandlesNote(true);
+      } else {
+        showCandlesNote(false);
+      }
+    } catch {}
+  });
+
+  // Carrega paleta de cores globais para o painel admin
+  let _adminColors = [];
+  async function loadAdminColors() {
+    const palette = document.getElementById('adminColorsPalette');
+    if (!palette) return;
+    if (_adminColors.length) {
+      renderAdminPalette(); return;
+    }
+    try {
+      const { colors } = await api.products.customizationColors();
+      _adminColors = colors || [];
+      renderAdminPalette();
+    } catch {
+      if (palette) palette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores.</span>';
+    }
+  }
+
+  function renderAdminPalette() {
+    const palette = document.getElementById('adminColorsPalette');
+    if (!palette) return;
+    palette.innerHTML = _adminColors.map(c => `
+      <button type="button" class="admin-color-chip" data-id="${c.id}" data-name="${c.name}" onclick="toggleAdminColor(this)">
+        <span class="admin-color-dot" style="background:${c.hex};border:0.5px solid rgba(0,0,0,0.1)"></span>
+        ${c.name}
+      </button>
+    `).join('');
+  }
+
+  window.toggleAdminColor = (el) => {
+    el.classList.toggle('selected');
+  };
 
   /* Init */
   loadDashboard();

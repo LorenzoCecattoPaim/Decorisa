@@ -267,20 +267,46 @@
   /* Redireciona se carrinho vazio */
   if (Cart.count() === 0) { window.location.href = 'loja.html'; return; }
 
-  let currentStep    = 1;
-  let shippingCost   = Cart.shippingCost();
+  let currentStep     = 1;
+  /* shippingCost é sempre lido do Cart para garantir consistência */
   let selectedPayment = 'pix';
+
+  /* Helper: lê o frete sempre do Cart (fonte da verdade) */
+  function getShipping() { return Cart.shippingCost(); }
 
   /* === RENDER RESUMO === */
   function renderSummary() {
-    const items = Cart.getItems();
-    const sub   = Cart.subtotal();
-    const disc  = Cart.discount();
-    const coupon = Cart.getCoupon();
+    const items   = Cart.getItems();
+    const sub     = Cart.subtotal();
+    const disc    = Cart.discount();
+    const ship    = getShipping();  // sempre do Cart
     const pixDisc = selectedPayment === 'pix' ? +(sub * 0.05).toFixed(2) : 0;
-    const total = +(sub - disc - pixDisc + (shippingCost || 0)).toFixed(2);
+    const total   = +(sub - disc - pixDisc + (ship !== null ? ship : 0)).toFixed(2);
 
-    document.getElementById('checkoutItems').innerHTML = items.map(i => `
+    const METALLIC_LABELS = Cart.METALLIC_LABELS || {
+      none: 'Nenhuma', ouro: 'Folha Ouro', prata: 'Folha Prata', rose_gold: 'Folha Rosé Gold'
+    };
+
+    function buildCustomTags(i) {
+      const tags = [];
+      if (i.selected_color) {
+        tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex(i.selected_color)};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>${i.selected_color}</span>`);
+      }
+      if (i.marble_enabled) tags.push(`<span class="checkout-custom-tag">Marmorizado</span>`);
+      if (i.metallic_type && i.metallic_type !== 'none') {
+        tags.push(`<span class="checkout-custom-tag">${METALLIC_LABELS[i.metallic_type] || i.metallic_type}</span>`);
+      }
+      return tags.length ? `<div class="checkout-item-custom">${tags.join('')}</div>` : '';
+    }
+
+    function getColorHex(name) {
+      const m = {'Branco':'#F9F7F4','Bege':'#E8DFD0','Areia':'#C9B99A','Cinza Claro':'#C0BBB4','Cinza Escuro':'#6B6560','Preto':'#2C2A26'};
+      return m[name] || '#CCC';
+    }
+
+    document.getElementById('checkoutItems').innerHTML = items.map(i => {
+      const unitTotal = (i.price + (i.customization_price || 0)) * i.qty;
+      return `
       <div class="checkout-item">
         <div class="checkout-item-img">
           ${i.image ? `<img src="${i.image}" alt="${i.name}" style="width:100%;height:100%;object-fit:cover">` : ''}
@@ -288,10 +314,11 @@
         <div class="checkout-item-info">
           <div class="checkout-item-name">${i.name}</div>
           <div class="checkout-item-qty">Qtd: ${i.qty} ${i.size ? `· ${i.size}` : ''}</div>
+          ${buildCustomTags(i)}
         </div>
-        <div class="checkout-item-price">${fmtPrice(i.price * i.qty)}</div>
+        <div class="checkout-item-price">${fmtPrice(unitTotal)}</div>
       </div>
-    `).join('');
+    `}).join('');
 
     document.getElementById('ckSubtotal').textContent = fmtPrice(sub);
 
@@ -304,16 +331,17 @@
     document.getElementById('ckPixDiscount').textContent = `− ${fmtPrice(pixDisc)}`;
     document.getElementById('pixDiscount').textContent = pixDisc > 0 ? `− ${fmtPrice(pixDisc)}` : '';
 
-    document.getElementById('ckFrete').textContent = shippingCost === null
-      ? 'A calcular' : shippingCost === 0 ? 'Grátis' : fmtPrice(shippingCost);
+    document.getElementById('ckFrete').textContent = ship === null
+      ? 'A calcular' : ship === 0 ? 'Grátis' : fmtPrice(ship);
     document.getElementById('ckTotal').textContent = fmtPrice(total);
   }
 
   function renderShippingOption() {
-    const optEl = document.getElementById('shippingOptions');
+    const optEl  = document.getElementById('shippingOptions');
     const listEl = document.getElementById('shippingOptionsList');
     if (!optEl || !listEl) return;
-    if (shippingCost === null) {
+    const ship = getShipping();
+    if (ship === null) {
       optEl.style.display = 'none';
       listEl.innerHTML = '';
       return;
@@ -321,12 +349,12 @@
     optEl.style.display = 'block';
     listEl.innerHTML = `
       <label class="payment-method selected" style="margin-bottom:8px">
-        <input type="radio" name="shipping" value="${shippingCost}" checked>
+        <input type="radio" name="shipping" value="${ship}" checked>
         <span>
           <strong style="display:block;font-size:13px;margin-bottom:2px">
-            ${shippingCost === 0 ? 'Frete gratis' : `Sedex - ${fmtPrice(shippingCost)}`}
+            ${ship === 0 ? 'Frete grátis' : `Sedex — ${fmtPrice(ship)}`}
           </strong>
-          <span style="font-size:12px;color:var(--color-text-light)">5 a 8 dias uteis</span>
+          <span style="font-size:12px;color:var(--color-text-light)">5 a 8 dias úteis após produção</span>
         </span>
       </label>
     `;
@@ -351,6 +379,10 @@
   function setErr(id, msg) {
     const el = document.getElementById(id + 'Err');
     if (el) el.textContent = msg;
+  }
+  function clearErr(id) {
+    const el = document.getElementById(id + 'Err');
+    if (el) el.textContent = '';
   }
   function clearErrors() {
     document.querySelectorAll('.field-error').forEach(e => e.textContent = '');
@@ -384,10 +416,10 @@
     }
     const cep = document.getElementById('shipZip')?.value.replace(/\D/g,'') || '';
     if (cep.length !== 8) {
-      setErr('shipZip', 'CEP deve ter 8 digitos');
+      setErr('shipZip', 'CEP deve ter 8 dígitos');
       ok = false;
-    } else if (shippingCost === null || Cart.shippingZip() !== cep) {
-      setErr('shipZip', 'Calcule o frete para este CEP');
+    } else if (getShipping() === null || Cart.shippingZip() !== cep) {
+      setErr('shipZip', 'Clique em "Buscar" para calcular o frete deste CEP');
       ok = false;
     }
     return ok;
@@ -395,46 +427,73 @@
 
   /* === BUSCA CEP === */
   window.doFetchCEP = async () => {
-    const cep = document.getElementById('shipZip')?.value.replace(/\D/g,'');
-    if (cep?.length !== 8) {
-      setErr('shipZip', 'Informe um CEP com 8 digitos');
-      shippingCost = null;
+    const zipEl = document.getElementById('shipZip');
+    const cep   = zipEl?.value.replace(/\D/g,'') || '';
+
+    if (cep.length === 0) {
+      setErr('shipZip', 'Informe o CEP para calcular o frete.');
+      return;
+    }
+    if (cep.length !== 8) {
+      setErr('shipZip', 'CEP deve ter 8 dígitos.');
       Cart.clearShipping();
       renderShippingOption();
       renderSummary();
       return;
     }
+
+    // Feedback visual de carregamento
+    const btn = document.querySelector('.btn-calcfrete');
+    const originalText = btn?.textContent;
+    if (btn) { btn.textContent = '...'; btn.disabled = true; }
+
     try {
       const data = await api.payment.getShipping(cep);
       const addr = data.address;
+
+      // Preenche campos de endereço automaticamente
       const map = { street:'shipStreet', neighborhood:'shipNeighborhood', city:'shipCity', state:'shipState' };
       Object.entries(map).forEach(([key, id]) => {
         const el = document.getElementById(id);
         if (el && addr[key]) el.value = addr[key];
       });
-      /* Calcula frete automático */
-      shippingCost = Cart.setShippingFromResponse(data, cep);
 
+      // Formata CEP com máscara no campo
+      if (zipEl) zipEl.value = `${cep.slice(0,5)}-${cep.slice(5)}`;
+
+      // Salva no Cart (fonte da verdade)
+      Cart.setShippingFromResponse(data, cep);
+      clearErr('shipZip');
       renderShippingOption();
       renderSummary();
     } catch (err) {
-      shippingCost = null;
       Cart.clearShipping();
       renderShippingOption();
       renderSummary();
-      setErr('shipZip', err?.message || 'Nao foi possivel calcular o frete');
-      showToast(err?.message || 'Erro ao buscar CEP.');
+      const msg = err?.message || 'Não foi possível calcular o frete. Tente novamente.';
+      setErr('shipZip', msg);
+      showToast(msg);
+    } finally {
+      if (btn) { btn.textContent = originalText; btn.disabled = false; }
     }
   };
 
+  // Máscara no campo CEP do checkout
   document.getElementById('shipZip')?.addEventListener('input', (e) => {
-    const cep = e.target.value.replace(/\D/g,'');
-    if (Cart.shippingZip() && Cart.shippingZip() !== cep) {
-      shippingCost = null;
+    let v = e.target.value.replace(/\D/g, '').slice(0, 8);
+    e.target.value = v.length > 5 ? `${v.slice(0,5)}-${v.slice(5)}` : v;
+
+    // Se o CEP mudou em relação ao que está salvo, limpa o frete
+    const currentCep = v;
+    if (Cart.shippingZip() && Cart.shippingZip() !== currentCep) {
       Cart.clearShipping();
       renderShippingOption();
       renderSummary();
     }
+  });
+
+  document.getElementById('shipZip')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); doFetchCEP(); }
   });
 
   /* === PAGAMENTO === */
@@ -585,7 +644,6 @@
     });
     const selectedZip = (a.zip || '').replace(/\D/g,'');
     if (!selectedZip || selectedZip !== Cart.shippingZip()) {
-      shippingCost = null;
       Cart.clearShipping();
       renderShippingOption();
       renderSummary();
@@ -607,7 +665,8 @@
   const storedAddress = Cart.shippingAddress();
   if (storedZip) {
     const zipEl = document.getElementById('shipZip');
-    if (zipEl) zipEl.value = storedZip.replace(/(\d{5})(\d{3})/,'$1-$2');
+    const rawZip = String(storedZip).replace(/\D/g, '');
+    if (zipEl) zipEl.value = rawZip.length === 8 ? `${rawZip.slice(0,5)}-${rawZip.slice(5)}` : rawZip;
   }
   if (storedAddress) {
     const map = { street:'shipStreet', neighborhood:'shipNeighborhood', city:'shipCity', state:'shipState' };
