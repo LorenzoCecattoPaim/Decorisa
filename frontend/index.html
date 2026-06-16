@@ -34,6 +34,7 @@
     <nav class="main-nav" id="mainNav" aria-label="Navegação principal">
       <ul>
         <li><a href="pages/loja.html">Loja</a></li>
+        <li><a href="pages/lancamentos.html">Lançamentos</a></li>
         <li><a href="pages/sobre.html">Sobre</a></li>
         <li><a href="pages/contato.html">Contato</a></li>
         <li id="adminLink" style="display:none"><a href="pages/admin.html">Admin</a></li>
@@ -196,6 +197,24 @@
   </div>
 </section>
 
+<!-- LANÇAMENTOS -->
+<section class="section-lancamentos" id="lancamentos" aria-label="Lançamentos Decorisa">
+  <div class="lancamentos-header">
+    <div class="eyebrow eyebrow-center"><span class="eyebrow-line"></span>Novidades<span class="eyebrow-line"></span></div>
+    <h2 class="section-title" style="text-align:center">Lançamentos <em>Decorisa</em></h2>
+    <div class="section-divider"></div>
+    <p class="section-subtitle" style="text-align:center">Coleções exclusivas, edições limitadas e peças recém-chegadas ao ateliê.</p>
+  </div>
+  <div class="lancamentos-grid" id="lancamentosGrid">
+    <!-- Skeletons -->
+    <div class="lancamento-card lc-skeleton"></div>
+    <div class="lancamento-card lc-skeleton"></div>
+  </div>
+  <div class="section-cta" id="lancamentosCta" style="display:none">
+    <a href="pages/lancamentos.html" class="btn-outline">Ver todos os lançamentos</a>
+  </div>
+</section>
+
 <!-- SOBRE -->
 <section class="section-sobre">
   <div class="sobre-visual" aria-hidden="true">
@@ -336,6 +355,7 @@
       <h3 class="footer-col-title">Loja</h3>
       <ul class="footer-links">
         <li><a href="pages/loja.html">Todos os produtos</a></li>
+        <li><a href="pages/lancamentos.html">Lançamentos</a></li>
         <li><a href="pages/loja.html?cat=vasos">Vasos</a></li>
         <li><a href="pages/loja.html?cat=bandejas">Bandejas</a></li>
         <li><a href="pages/loja.html?cat=kits">Kits</a></li>
@@ -414,7 +434,53 @@
       initReveal();
     }
   } catch {}
+
+  /* Carrega lançamentos em destaque na home */
+  try {
+    const { launches } = await api.launches.list({ featured_home: 'true', limit: 4 });
+    const grid = document.getElementById('lancamentosGrid');
+    const cta = document.getElementById('lancamentosCta');
+
+    if (launches && launches.length > 0) {
+      // Layout editorial: primeiro card largo (se houver 1), demais lado a lado
+      const hasWide = launches.length === 1 || launches.length === 3;
+      grid.innerHTML = launches.map((l, i) => {
+        const isWide = hasWide && i === 0;
+        const hasImg = !!l.cover_url;
+        return `
+          <a href="pages/lancamentos.html?slug=${l.slug}" class="lancamento-card ${isWide ? 'lancamento-card-wide' : ''} ${!hasImg ? 'lancamento-card-light' : ''} reveal">
+            <div class="lancamento-card-inner">
+              ${hasImg
+                ? `<img class="lc-img" src="${l.cover_url}" alt="${escHome(l.title)}" loading="lazy">`
+                : `<div class="lc-placeholder"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`
+              }
+              <div class="lc-overlay"></div>
+              <div class="lc-content">
+                <p class="lc-num">Lançamento ${String(i + 1).padStart(2, '0')}</p>
+                <h3 class="lc-title">${escHome(l.title)}</h3>
+                ${l.subtitle ? `<p class="lc-subtitle">${escHome(l.subtitle)}</p>` : ''}
+                <span class="lc-cta">Explorar coleção →</span>
+              </div>
+            </div>
+          </a>`;
+      }).join('');
+      if (cta) cta.style.display = '';
+      initReveal();
+    } else {
+      // Sem lançamentos: oculta a seção da home
+      const sec = document.getElementById('lancamentos');
+      if (sec) sec.style.display = 'none';
+    }
+  } catch {
+    const sec = document.getElementById('lancamentos');
+    if (sec) sec.style.display = 'none';
+  }
 })();
+
+function escHome(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 </script>
 </body>
 </html>

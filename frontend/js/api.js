@@ -259,6 +259,40 @@ const api = {
     },
   },
 
+  launches: {
+    async list({ featured_home, limit, page } = {}) {
+      const p = new URLSearchParams();
+      if (featured_home) p.set('featured_home', featured_home);
+      if (limit) p.set('limit', limit);
+      if (page) p.set('page', page);
+      return get(`/launches?${p}`);
+    },
+    async get(slug) {
+      return get(`/launches/${slug}`);
+    },
+    async adminList({ page, limit } = {}) {
+      const p = new URLSearchParams();
+      if (page) p.set('page', page);
+      if (limit) p.set('limit', limit);
+      return get(`/launches/admin/list?${p}`, true);
+    },
+    async adminGet(id) {
+      return get(`/launches/admin/${id}`, true);
+    },
+    async create(payload) {
+      return post('/launches/admin', payload, true);
+    },
+    async update(id, payload) {
+      return put(`/launches/admin/${id}`, payload, true);
+    },
+    async delete(id) {
+      return del(`/launches/admin/${id}`, true);
+    },
+    async reorder(id, sort_order) {
+      return patch(`/launches/admin/${id}/order`, { sort_order }, true);
+    },
+  },
+
   payment: {
     async createMPPreference(order_id) {
       return post('/payment/mp/preference', { order_id }, true);

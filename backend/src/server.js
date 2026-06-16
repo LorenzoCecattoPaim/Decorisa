@@ -10,6 +10,7 @@ const productRoutes = require('./routes/products');
 const orderRoutes   = require('./routes/orders');
 const contactRoutes = require('./routes/contact');
 const imageRoutes   = require('./routes/images');
+const launchRoutes  = require('./routes/launches');
 const { couponRouter, newsletterRouter, addressRouter, adminRouter, paymentRouter } = require('./routes/extra');
 const { errorHandler, notFound } = require('./middleware/validate');
 
@@ -95,6 +96,7 @@ app.use('/api/products',   productRoutes);
 app.use('/api/orders',     orderRoutes);
 app.use('/api/contact',    contactRoutes);
 app.use('/api/images',     imageRoutes);
+app.use('/api/launches',   launchRoutes);
 app.use('/api/coupons',    couponRouter);
 app.use('/api/newsletter', newsletterRouter);
 app.use('/api/addresses',  addressRouter);

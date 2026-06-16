@@ -21,4 +21,9 @@
   <url>
     <loc>https://decorisa.com.br/pages/admin.html</loc>
   </url>
+  <url>
+    <loc>https://decorisa.com.br/pages/lancamentos.html</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

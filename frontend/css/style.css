@@ -2801,3 +2801,169 @@ textarea,
   border: 0.5px solid rgba(196,186,168,0.4);
 }
 
+
+/* ============================================================
+   SEÇÃO LANÇAMENTOS — HOME
+   ============================================================ */
+.section-lancamentos {
+  padding: var(--space-3xl) var(--space-xl);
+  background: var(--color-bg-alt);
+}
+
+.lancamentos-header {
+  max-width: 680px;
+  margin: 0 auto 56px;
+}
+
+.lancamentos-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+  gap: 2px;
+}
+
+/* Skeleton */
+.lc-skeleton {
+  aspect-ratio: 16/9;
+  background: linear-gradient(90deg, var(--color-bg) 25%, rgba(196,186,168,0.1) 50%, var(--color-bg) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  min-height: 260px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Card de lançamento na home */
+.lancamento-card {
+  position: relative;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  background: var(--color-bg-alt);
+  cursor: pointer;
+}
+
+.lancamento-card-wide {
+  grid-column: span 2;
+}
+
+.lc-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+
+.lancamento-card:hover .lc-img {
+  transform: scale(1.04);
+}
+
+.lc-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-bg-alt) 0%, rgba(196,186,168,0.2) 100%);
+}
+
+.lancamento-card-inner {
+  position: relative;
+  aspect-ratio: 4/5;
+  min-height: 400px;
+}
+
+.lancamento-card-wide .lancamento-card-inner {
+  aspect-ratio: 21/9;
+  min-height: 360px;
+}
+
+.lc-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(30,28,24,0.75) 0%, rgba(30,28,24,0.1) 50%, transparent 100%);
+  z-index: 1;
+}
+
+.lc-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 32px;
+  z-index: 2;
+}
+
+.lc-num {
+  font-family: var(--font-body);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(240,235,227,0.6);
+  margin-bottom: 8px;
+}
+
+.lc-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 300;
+  color: #F0EBE3;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+
+.lc-subtitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 13px;
+  color: rgba(240,235,227,0.7);
+  margin-bottom: 16px;
+}
+
+.lc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #F0EBE3;
+  border-bottom: 0.5px solid rgba(240,235,227,0.4);
+  padding-bottom: 3px;
+  transition: border-color 0.2s, gap 0.2s;
+}
+
+.lancamento-card:hover .lc-cta {
+  gap: 12px;
+  border-color: rgba(240,235,227,0.9);
+}
+
+/* Card sem imagem (light) */
+.lancamento-card-light {
+  background: var(--color-bg);
+  border: 0.5px solid var(--color-border);
+}
+
+.lancamento-card-light .lc-overlay { display: none; }
+.lancamento-card-light .lc-num { color: var(--color-text-muted); }
+.lancamento-card-light .lc-title { color: var(--color-text); }
+.lancamento-card-light .lc-subtitle { color: var(--color-text-light); }
+.lancamento-card-light .lc-cta { color: var(--color-text); border-color: var(--color-border-mid); }
+
+/* Mobile */
+@media (max-width: 768px) {
+  .section-lancamentos { padding: 60px 20px; }
+  .lancamentos-grid { grid-template-columns: 1fr; }
+  .lancamento-card-wide { grid-column: span 1; }
+  .lancamento-card-wide .lancamento-card-inner { aspect-ratio: 4/3; min-height: 280px; }
+  .lancamento-card-inner { min-height: 320px; }
+  .lc-content { padding: 24px; }
+}
