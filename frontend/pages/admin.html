@@ -1641,20 +1641,23 @@
     const palette = document.getElementById('adminColorsPalette');
     if (!palette) return;
     try {
-      const { colors } = await api.products.adminCustomizationColors();
-      _adminColors = (colors || []).filter(c => c.active);
+      // Usa rota pública para evitar problema de token expirado no formulário de produto
+      const { colors } = await api.products.customizationColors();
+      _adminColors = colors || [];
       renderAdminPalette();
-    } catch {
+    } catch (err) {
+      console.error('[loadAdminColors] Cores da peça:', err);
       if (palette) palette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores.</span>';
     }
-    // Marble colors
+    // Marble colors — também usa rota pública
     const mPalette = document.getElementById('adminMarbleColorsPalette');
     if (!mPalette) return;
     try {
-      const { colors: mc } = await api.products.adminMarbleColors();
-      _adminMarbleColors = (mc || []).filter(c => c.active);
+      const { colors: mc } = await api.products.marbleColors();
+      _adminMarbleColors = mc || [];
       renderAdminMarblePalette();
-    } catch {
+    } catch (err) {
+      console.error('[loadAdminColors] Cores de marmorizado:', err);
       if (mPalette) mPalette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores de marmorizado.</span>';
     }
   }
