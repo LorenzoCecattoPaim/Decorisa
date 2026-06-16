@@ -128,8 +128,9 @@ const Cart = (() => {
     const c = customization || {};
     const metallicKey = c.metallic_type || 'none';
     const marbleKey   = c.marble_enabled ? '1' : '0';
+    const marbleColorKey = c.marble_color || 'none';
     const colorKey    = c.selected_color || color || 'none';
-    const key = `${product.id}-${colorKey}-${size || 'none'}-${marbleKey}-${metallicKey}`;
+    const key = `${product.id}-${colorKey}-${size || 'none'}-${marbleKey}-${marbleColorKey}-${metallicKey}`;
 
     const ex = _items.find(i => i.key === key);
     if (ex) {
@@ -148,6 +149,7 @@ const Cart = (() => {
         image: product.images?.[0]?.url || null,
         selected_color:      c.selected_color      || null,
         marble_enabled:      c.marble_enabled      || false,
+        marble_color:        c.marble_color        || null,
         metallic_type:       c.metallic_type       || null,
         customization_price: Number(c.customization_price) || 0,
       });
@@ -285,7 +287,11 @@ const Cart = (() => {
       parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.selected_color)}"></span>${item.selected_color}</span>`);
     }
     if (item.marble_enabled) {
-      parts.push(`<span class="cart-custom-tag">Marmorizado</span>`);
+      if (item.marble_color) {
+        parts.push(`<span class="cart-custom-tag">Marmorizado: ${item.marble_color}</span>`);
+      } else {
+        parts.push(`<span class="cart-custom-tag">Marmorizado</span>`);
+      }
     }
     if (item.metallic_type && item.metallic_type !== 'none') {
       parts.push(`<span class="cart-custom-tag">${METALLIC_LABELS[item.metallic_type] || item.metallic_type}</span>`);
@@ -480,6 +486,7 @@ const Cart = (() => {
         variant_size:  i.size    || null,
         selected_color: i.selected_color || null,
         marble_enabled: i.marble_enabled || false,
+        marble_color:   i.marble_color   || null,
         metallic_type:  i.metallic_type  || 'none',
       })),
       coupon_code: _coupon?.code || null,

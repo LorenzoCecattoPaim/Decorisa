@@ -112,6 +112,33 @@ const api = {
     async customizationColors() {
       return get('/products/customization-colors');
     },
+    async marbleColors() {
+      return get('/products/marble-colors');
+    },
+    async adminCustomizationColors() {
+      return get('/products/admin/customization-colors', true);
+    },
+    async createCustomizationColor(payload) {
+      return post('/products/admin/customization-colors', payload, true);
+    },
+    async updateCustomizationColor(id, payload) {
+      return put(`/products/admin/customization-colors/${id}`, payload, true);
+    },
+    async deleteCustomizationColor(id) {
+      return del(`/products/admin/customization-colors/${id}`, true);
+    },
+    async adminMarbleColors() {
+      return get('/products/admin/marble-colors', true);
+    },
+    async createMarbleColor(payload) {
+      return post('/products/admin/marble-colors', payload, true);
+    },
+    async updateMarbleColor(id, payload) {
+      return put(`/products/admin/marble-colors/${id}`, payload, true);
+    },
+    async deleteMarbleColor(id) {
+      return del(`/products/admin/marble-colors/${id}`, true);
+    },
     async create(payload) {
       return post('/products', payload, true);
     },

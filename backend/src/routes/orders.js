@@ -45,6 +45,7 @@ router.post('/',
         // Personalização: calcular preço extra
         let customization_price = 0;
         let marble_enabled = false;
+        let marble_color = null;
         let metallic_type = null;
         let selected_color = null;
 
@@ -58,6 +59,10 @@ router.post('/',
           // Marmorizado
           if (item.marble_enabled && prod.allow_marble) {
             marble_enabled = true;
+            // Cor do marmorizado
+            if (item.marble_color) {
+              marble_color = item.marble_color;
+            }
           }
           // Folha metálica
           if (item.metallic_type && item.metallic_type !== 'none' && prod.allow_metallic) {
@@ -84,6 +89,7 @@ router.post('/',
           total_price,
           selected_color,
           marble_enabled,
+          marble_color,
           metallic_type,
           customization_price,
         });
@@ -158,7 +164,7 @@ router.get('/mine', auth, async (req, res, next) => {
   try {
     const { data, error } = await supabase
       .from('orders')
-      .select('id,order_number,status,payment_status,total,created_at,order_items(product_name,quantity,unit_price,selected_color,marble_enabled,metallic_type,customization_price)')
+      .select('id,order_number,status,payment_status,total,created_at,order_items(product_name,quantity,unit_price,selected_color,marble_enabled,marble_color,metallic_type,customization_price)')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false });
     if (error) throw error;

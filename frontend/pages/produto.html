@@ -207,6 +207,8 @@
   let customColor    = null;  // nome da cor selecionada
   let customColorHex = null;  // hex da cor
   let marbleEnabled  = false;
+  let marbleColor    = null;  // nome da cor do marmorizado
+  let marbleColorHex = null;  // hex da cor do marmorizado
   let metallicType   = 'none'; // 'none' | 'ouro' | 'prata' | 'rose_gold'
   let metallicPrice  = 0;
 
@@ -391,6 +393,27 @@
               <span class="marble-toggle-desc" id="marbleDesc">Não — acabamento liso</span>
             </div>
           </div>
+          ${product.available_marble_colors?.length ? `
+          <div class="customize-group" id="groupMarmoreCor" style="display:none">
+            <div class="customize-group-label">
+              Cor do Marmorizado
+              <span class="selected-value" id="selectedMarbleColorLabel"></span>
+            </div>
+            <div class="color-swatches">
+              ${product.available_marble_colors.map((c, i) => `
+                <button class="color-swatch marble-color-swatch"
+                  data-name="${c.name}"
+                  data-hex="${c.hex}"
+                  style="background:${c.hex}"
+                  title="${c.name}"
+                  onclick="selectMarbleColor(this)"
+                  aria-label="${c.name}"
+                  aria-pressed="false">
+                </button>
+              `).join('')}
+            </div>
+          </div>
+          ` : ''}
           ` : ''}
 
           ${product.allow_metallic ? `
@@ -591,6 +614,7 @@
     const customization = product.allow_customization ? {
       selected_color:      customColor || null,
       marble_enabled:      marbleEnabled,
+      marble_color:        marbleEnabled ? (marbleColor || null) : null,
       metallic_type:       metallicType !== 'none' ? metallicType : null,
       customization_price: metallicType && metallicType !== 'none' ? metallicPrice : 0,
     } : null;
@@ -614,7 +638,34 @@
     marbleEnabled = checkbox.checked;
     const desc = document.getElementById('marbleDesc');
     if (desc) desc.textContent = marbleEnabled ? 'Sim — efeito marmorizado' : 'Não — acabamento liso';
+    const groupMarbleColor = document.getElementById('groupMarmoreCor');
+    if (groupMarbleColor) {
+      groupMarbleColor.style.display = marbleEnabled ? 'block' : 'none';
+    }
+    if (!marbleEnabled) {
+      marbleColor = null;
+      marbleColorHex = null;
+      document.querySelectorAll('.marble-color-swatch').forEach(s => {
+        s.classList.remove('selected');
+        s.setAttribute('aria-pressed', 'false');
+      });
+      const lbl = document.getElementById('selectedMarbleColorLabel');
+      if (lbl) lbl.textContent = '';
+    }
     updatePriceDisplay();
+  };
+
+  window.selectMarbleColor = (el) => {
+    document.querySelectorAll('.marble-color-swatch').forEach(s => {
+      s.classList.remove('selected');
+      s.setAttribute('aria-pressed', 'false');
+    });
+    el.classList.add('selected');
+    el.setAttribute('aria-pressed', 'true');
+    marbleColor = el.dataset.name;
+    marbleColorHex = el.dataset.hex;
+    const lbl = document.getElementById('selectedMarbleColorLabel');
+    if (lbl) lbl.textContent = marbleColor;
   };
 
   window.selectMetallic = (el) => {

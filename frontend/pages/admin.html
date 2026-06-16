@@ -143,6 +143,10 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12l-2-2 9-9 9 9-2 2"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/><path d="M9 21v-6a2 2 0 012-2h2a2 2 0 012 2v6"/></svg>
         Lançamentos
       </button>
+      <button class="sidebar-link" data-panel="cores" onclick="switchPanel(this)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 000 20"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10"/><circle cx="12" cy="12" r="3"/></svg>
+        Cores
+      </button>
     </nav>
     <div class="sidebar-footer">
       <a href="../index.html" style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:#4A4840;display:flex;align-items:center;gap:8px">
@@ -289,6 +293,14 @@
             <div id="colorsPickerGroup">
               <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Cores disponíveis para este produto</div>
               <div class="admin-colors-palette" id="adminColorsPalette">
+                <span style="font-size:12px;color:var(--color-text-light)">Carregando cores...</span>
+              </div>
+              <p style="font-size:11px;color:var(--color-text-light);margin-top:8px">Clique para selecionar/deselecionar</p>
+            </div>
+
+            <div id="marbleColorsPickerGroup" style="margin-top:20px">
+              <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:8px">Cores de marmorizado disponíveis para este produto</div>
+              <div class="admin-colors-palette" id="adminMarbleColorsPalette">
                 <span style="font-size:12px;color:var(--color-text-light)">Carregando cores...</span>
               </div>
               <p style="font-size:11px;color:var(--color-text-light);margin-top:8px">Clique para selecionar/deselecionar</p>
@@ -535,6 +547,67 @@
         </div>
       </div>
 
+      <!-- PAINEL: CORES -->
+      <div class="admin-panel" id="panel-cores">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:12px">
+          <div>
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:4px">Gerenciamento</div>
+            <div style="font-family:var(--font-display);font-size:22px;font-weight:300">Paleta de Cores</div>
+          </div>
+        </div>
+
+        <!-- CORES DAS PEÇAS -->
+        <div style="margin-bottom:48px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-light)">Cores das Peças Lisas</div>
+            <button onclick="showColorForm('piece')" class="btn-ghost" style="font-size:10px;padding:8px 16px">+ Nova cor</button>
+          </div>
+          <div id="pieceColorsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+            <p style="font-size:13px;color:var(--color-text-muted)">Carregando...</p>
+          </div>
+        </div>
+
+        <!-- CORES DO MARMORIZADO -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-text-light)">Cores do Marmorizado</div>
+            <button onclick="showColorForm('marble')" class="btn-ghost" style="font-size:10px;padding:8px 16px">+ Nova cor</button>
+          </div>
+          <div id="marbleColorsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+            <p style="font-size:13px;color:var(--color-text-muted)">Carregando...</p>
+          </div>
+        </div>
+
+        <!-- FORMULÁRIO DE COR (modal inline) -->
+        <div id="colorFormWrap" style="display:none;position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;background:rgba(44,42,38,0.5);backdrop-filter:blur(4px)">
+          <div style="background:var(--color-bg);padding:32px;max-width:420px;width:90%;position:relative">
+            <button onclick="hideColorForm()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-muted)">×</button>
+            <input type="hidden" id="colorFormType">
+            <input type="hidden" id="colorFormId">
+            <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:6px" id="colorFormTitle">Nova Cor</div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label>Nome *</label>
+              <input type="text" id="colorFormName" placeholder="Ex: Azul Petróleo">
+            </div>
+            <div class="form-group" style="margin-bottom:16px">
+              <label>Código Hex *</label>
+              <div style="display:flex;gap:10px;align-items:center">
+                <input type="color" id="colorFormPicker" style="width:48px;height:38px;border:0.5px solid var(--color-border-mid);cursor:pointer;padding:2px;background:var(--color-bg-alt)" oninput="document.getElementById('colorFormHex').value=this.value">
+                <input type="text" id="colorFormHex" placeholder="#RRGGBB" style="flex:1" oninput="syncColorPicker()">
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:20px">
+              <label>Ordem</label>
+              <input type="number" id="colorFormOrder" placeholder="0" min="0">
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onclick="saveColor()" class="btn-primary" style="flex:1;font-size:11px;padding:12px">Salvar</button>
+              <button onclick="hideColorForm()" class="btn-ghost" style="font-size:11px;padding:12px 18px">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -553,7 +626,7 @@
   document.getElementById('adminUserLabel').textContent = user.name;
 
   /* === SWITCH PANEL === */
-  const TITLES = { dashboard:'Dashboard', pedidos:'Pedidos', produtos:'Produtos', cadastro:'Novo produto', clientes:'Clientes', cupons:'Cupons', banners:'Banners', categorias:'Categorias', lancamentos:'Lançamentos' };
+  const TITLES = { dashboard:'Dashboard', pedidos:'Pedidos', produtos:'Produtos', cadastro:'Novo produto', clientes:'Clientes', cupons:'Cupons', banners:'Banners', categorias:'Categorias', lancamentos:'Lançamentos', cores:'Gerenciar Cores' };
 
   window.switchPanel = (btn) => {
     const panelId = btn.dataset.panel;
@@ -575,6 +648,7 @@
     banners:   loadBanners,
     categorias: loadCategorias,
     lancamentos: loadLancamentos,
+    cores: loadCores,
     cadastro: () => { populateCatSelect(); imgInitForm(document.getElementById('editingProductId').value || null); },
   };
 
@@ -726,7 +800,10 @@
             ${(order.order_items || []).map(i => {
               const customs = [];
               if (i.selected_color) customs.push({ label: 'Cor', value: i.selected_color });
-              if (i.marble_enabled) customs.push({ label: 'Marmorizado', value: 'Sim' });
+              if (i.marble_enabled) {
+                const mv = i.marble_color ? `Sim — ${i.marble_color}` : 'Sim';
+                customs.push({ label: 'Marmorizado', value: mv });
+              }
               if (i.metallic_type && i.metallic_type !== 'none') customs.push({ label: 'Folha', value: METALLIC_LABELS[i.metallic_type] || i.metallic_type });
               return `
                 <div style="padding:16px;border:0.5px solid var(--color-border);border-radius:12px">
@@ -835,8 +912,14 @@
 
       // Selecionar cores disponíveis
       const availableIds = (productData.available_colors || []).map(c => c.id);
-      document.querySelectorAll('.admin-color-chip').forEach(chip => {
+      document.querySelectorAll('#adminColorsPalette .admin-color-chip').forEach(chip => {
         chip.classList.toggle('selected', availableIds.includes(chip.dataset.id));
+      });
+
+      // Selecionar cores de marmorizado disponíveis
+      const availableMarbleIds = (productData.available_marble_colors || []).map(c => c.id);
+      document.querySelectorAll('#adminMarbleColorsPalette .admin-color-chip').forEach(chip => {
+        chip.classList.toggle('selected', availableMarbleIds.includes(chip.dataset.id));
       });
     }
 
@@ -884,10 +967,17 @@
 
     // Coletar cores selecionadas
     const selectedColorIds = [];
-    document.querySelectorAll('.admin-color-chip.selected').forEach(chip => {
+    document.querySelectorAll('#adminColorsPalette .admin-color-chip.selected').forEach(chip => {
       selectedColorIds.push(chip.dataset.id);
     });
     payload.available_color_ids = selectedColorIds;
+
+    // Coletar cores de marmorizado selecionadas
+    const selectedMarbleColorIds = [];
+    document.querySelectorAll('#adminMarbleColorsPalette .admin-color-chip.selected').forEach(chip => {
+      selectedMarbleColorIds.push(chip.dataset.id);
+    });
+    payload.available_marble_color_ids = selectedMarbleColorIds;
 
     try {
       let result;
@@ -1503,7 +1593,7 @@
   // Controla visibilidade dos sub-checkboxes de personalização
   window.onAllowCustomChange = (checkbox) => {
     const allowed = checkbox?.checked;
-    const subFields = ['labelAllowColors','labelAllowMarble','labelAllowMetallic','colorsPickerGroup'];
+    const subFields = ['labelAllowColors','labelAllowMarble','labelAllowMetallic','colorsPickerGroup','marbleColorsPickerGroup'];
     subFields.forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.opacity = allowed ? '1' : '0.4';
@@ -1546,18 +1636,26 @@
 
   // Carrega paleta de cores globais para o painel admin
   let _adminColors = [];
+  let _adminMarbleColors = [];
   async function loadAdminColors() {
     const palette = document.getElementById('adminColorsPalette');
     if (!palette) return;
-    if (_adminColors.length) {
-      renderAdminPalette(); return;
-    }
     try {
-      const { colors } = await api.products.customizationColors();
-      _adminColors = colors || [];
+      const { colors } = await api.products.adminCustomizationColors();
+      _adminColors = (colors || []).filter(c => c.active);
       renderAdminPalette();
     } catch {
       if (palette) palette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores.</span>';
+    }
+    // Marble colors
+    const mPalette = document.getElementById('adminMarbleColorsPalette');
+    if (!mPalette) return;
+    try {
+      const { colors: mc } = await api.products.adminMarbleColors();
+      _adminMarbleColors = (mc || []).filter(c => c.active);
+      renderAdminMarblePalette();
+    } catch {
+      if (mPalette) mPalette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores de marmorizado.</span>';
     }
   }
 
@@ -1572,8 +1670,161 @@
     `).join('');
   }
 
+  function renderAdminMarblePalette() {
+    const palette = document.getElementById('adminMarbleColorsPalette');
+    if (!palette) return;
+    palette.innerHTML = _adminMarbleColors.map(c => `
+      <button type="button" class="admin-color-chip" data-id="${c.id}" data-name="${c.name}" onclick="toggleAdminMarbleColor(this)">
+        <span class="admin-color-dot" style="background:${c.hex};border:0.5px solid rgba(0,0,0,0.1)"></span>
+        ${c.name}
+      </button>
+    `).join('');
+  }
+
   window.toggleAdminColor = (el) => {
     el.classList.toggle('selected');
+  };
+
+  window.toggleAdminMarbleColor = (el) => {
+    el.classList.toggle('selected');
+  };
+
+  /* ============================================================
+     PAINEL CORES — Gerenciar cores globais
+     ============================================================ */
+
+  async function loadCores() {
+    await Promise.all([loadPieceColorsGrid(), loadMarbleColorsGrid()]);
+  }
+
+  async function loadPieceColorsGrid() {
+    const el = document.getElementById('pieceColorsGrid');
+    if (!el) return;
+    el.innerHTML = '<p style="font-size:13px;color:var(--color-text-muted)">Carregando...</p>';
+    try {
+      const { colors } = await api.products.adminCustomizationColors();
+      if (!colors?.length) { el.innerHTML = '<p style="font-size:13px;color:var(--color-text-muted)">Nenhuma cor cadastrada.</p>'; return; }
+      el.innerHTML = colors.map(c => renderColorCard(c, 'piece')).join('');
+    } catch { el.innerHTML = '<p style="color:#A33;font-size:13px">Erro ao carregar cores.</p>'; }
+  }
+
+  async function loadMarbleColorsGrid() {
+    const el = document.getElementById('marbleColorsGrid');
+    if (!el) return;
+    el.innerHTML = '<p style="font-size:13px;color:var(--color-text-muted)">Carregando...</p>';
+    try {
+      const { colors } = await api.products.adminMarbleColors();
+      if (!colors?.length) { el.innerHTML = '<p style="font-size:13px;color:var(--color-text-muted)">Nenhuma cor cadastrada.</p>'; return; }
+      el.innerHTML = colors.map(c => renderColorCard(c, 'marble')).join('');
+    } catch { el.innerHTML = '<p style="color:#A33;font-size:13px">Erro ao carregar cores.</p>'; }
+  }
+
+  function renderColorCard(c, type) {
+    const statusLabel = c.active ? 'Visível' : 'Oculta';
+    const statusColor = c.active ? '#4A7A4A' : '#A33';
+    return `
+      <div style="border:0.5px solid var(--color-border);padding:14px 16px;display:flex;align-items:center;gap:12px;background:var(--color-bg-alt)">
+        <div style="width:36px;height:36px;border-radius:50%;background:${c.hex};border:0.5px solid rgba(0,0,0,0.12);flex-shrink:0"></div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escAdm(c.name)}</div>
+          <div style="font-size:10px;color:var(--color-text-light);font-family:monospace">${c.hex}</div>
+          <div style="font-size:10px;color:${statusColor};margin-top:2px">${statusLabel} · Ordem ${c.sort_order}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <button onclick="editColorItem('${c.id}','${type}')" class="btn-ghost" style="font-size:9px;padding:5px 10px">Editar</button>
+          <button onclick="toggleColorActive('${c.id}','${type}',${!c.active})" style="font-size:9px;padding:5px 10px;background:transparent;border:0.5px solid var(--color-border-mid);cursor:pointer;font-family:var(--font-body);letter-spacing:0.06em;text-transform:uppercase;color:var(--color-text-muted)">${c.active ? 'Ocultar' : 'Mostrar'}</button>
+          <button onclick="deleteColorItem('${c.id}','${type}')" style="font-size:9px;padding:5px 10px;background:transparent;border:0.5px solid #A33;color:#A33;cursor:pointer;font-family:var(--font-body);letter-spacing:0.06em;text-transform:uppercase">Excluir</button>
+        </div>
+      </div>
+    `;
+  }
+
+  window.showColorForm = (type, color = null) => {
+    document.getElementById('colorFormType').value = type;
+    document.getElementById('colorFormId').value = color?.id || '';
+    document.getElementById('colorFormTitle').textContent = color
+      ? `Editar ${type === 'piece' ? 'cor da peça' : 'cor do marmorizado'}`
+      : `Nova ${type === 'piece' ? 'cor da peça' : 'cor do marmorizado'}`;
+    document.getElementById('colorFormName').value = color?.name || '';
+    document.getElementById('colorFormHex').value = color?.hex || '#C4BAA8';
+    document.getElementById('colorFormPicker').value = color?.hex || '#C4BAA8';
+    document.getElementById('colorFormOrder').value = color?.sort_order ?? 0;
+    const wrap = document.getElementById('colorFormWrap');
+    wrap.style.display = 'flex';
+  };
+
+  window.hideColorForm = () => {
+    document.getElementById('colorFormWrap').style.display = 'none';
+  };
+
+  window.syncColorPicker = () => {
+    const hex = document.getElementById('colorFormHex').value;
+    if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+      document.getElementById('colorFormPicker').value = hex;
+    }
+  };
+
+  window.saveColor = async () => {
+    const type = document.getElementById('colorFormType').value;
+    const id = document.getElementById('colorFormId').value;
+    const name = document.getElementById('colorFormName').value.trim();
+    const hex = document.getElementById('colorFormHex').value.trim();
+    const sort_order = parseInt(document.getElementById('colorFormOrder').value) || 0;
+    if (!name || !hex) { showToast('Nome e hex são obrigatórios.'); return; }
+    if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) { showToast('Hex inválido. Use formato #RRGGBB'); return; }
+    try {
+      if (id) {
+        type === 'piece'
+          ? await api.products.updateCustomizationColor(id, { name, hex, sort_order })
+          : await api.products.updateMarbleColor(id, { name, hex, sort_order });
+        showToast('Cor atualizada!');
+      } else {
+        type === 'piece'
+          ? await api.products.createCustomizationColor({ name, hex, sort_order })
+          : await api.products.createMarbleColor({ name, hex, sort_order });
+        showToast('Cor criada!');
+      }
+      hideColorForm();
+      // Invalida cache
+      _adminColors = [];
+      _adminMarbleColors = [];
+      type === 'piece' ? loadPieceColorsGrid() : loadMarbleColorsGrid();
+    } catch (err) { showToast('Erro: ' + err.message); }
+  };
+
+  window.editColorItem = async (id, type) => {
+    try {
+      const { colors } = type === 'piece'
+        ? await api.products.adminCustomizationColors()
+        : await api.products.adminMarbleColors();
+      const color = colors.find(c => c.id === id);
+      if (color) showColorForm(type, color);
+    } catch (err) { showToast('Erro: ' + err.message); }
+  };
+
+  window.toggleColorActive = async (id, type, active) => {
+    try {
+      type === 'piece'
+        ? await api.products.updateCustomizationColor(id, { active })
+        : await api.products.updateMarbleColor(id, { active });
+      showToast(active ? 'Cor ativada!' : 'Cor ocultada!');
+      _adminColors = [];
+      _adminMarbleColors = [];
+      type === 'piece' ? loadPieceColorsGrid() : loadMarbleColorsGrid();
+    } catch (err) { showToast('Erro: ' + err.message); }
+  };
+
+  window.deleteColorItem = async (id, type) => {
+    if (!confirm('Excluir esta cor? A ação não pode ser desfeita.')) return;
+    try {
+      type === 'piece'
+        ? await api.products.deleteCustomizationColor(id)
+        : await api.products.deleteMarbleColor(id);
+      showToast('Cor excluída.');
+      _adminColors = [];
+      _adminMarbleColors = [];
+      type === 'piece' ? loadPieceColorsGrid() : loadMarbleColorsGrid();
+    } catch (err) { showToast('Erro: ' + err.message); }
   };
 
   /* ============================================================
