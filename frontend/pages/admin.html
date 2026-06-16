@@ -1641,6 +1641,7 @@
     document.getElementById('lcSaveBtn').textContent = 'Salvar lançamento';
     document.getElementById('lcTitle').value = '';
     document.getElementById('lcSlug').value = '';
+    document.getElementById('lcSlug')._touched = false;
     document.getElementById('lcSubtitle').value = '';
     document.getElementById('lcDesc').value = '';
     document.getElementById('lcCover').value = '';
@@ -1655,6 +1656,7 @@
     loadLcProductsList();
     document.getElementById('lcForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+  window.showLcForm = showLcForm;
 
   window.hideLcForm = () => { document.getElementById('lcForm').style.display = 'none'; };
 
