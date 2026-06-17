@@ -78,7 +78,15 @@ const mailer = {
           <tr class="total-row"><td>Total</td><td>R$ ${Number(order.total).toFixed(2).replace('.',',')}</td></tr>
         </table>
         <div class="divider"></div>
-        <p>O prazo de produção artesanal é de <strong>${order.production_days || 7} a ${(order.production_days || 7) + 3} dias úteis</strong> após a confirmação do pagamento. Você receberá um e-mail com o código de rastreio assim que o pedido for enviado.</p>
+        <p>O prazo de produção artesanal é de <strong>${order.production_days || 7} a ${(order.production_days || 7) + 3} dias úteis</strong> após a confirmação do pagamento.</p>
+        ${order.isPickup ? `
+        <div style="background:#F5F0EB;border-left:3px solid #9A8478;padding:18px 20px;margin:16px 0">
+          <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#2C2A26">📍 Retirada na Loja</p>
+          <p style="margin:0 0 4px;font-size:13px;color:#4A4840">Rua Emílio Costa, nº 30</p>
+          <p style="margin:0 0 12px;font-size:13px;color:#4A4840">Campestre da Serra — RS</p>
+          <p style="margin:0;font-size:12px;color:#8A8478">Entraremos em contato quando seu pedido estiver pronto para retirada.</p>
+        </div>
+        ` : `<p>Você receberá um e-mail com o código de rastreio assim que o pedido for enviado.</p>`}
         <a href="${process.env.FRONTEND_URL}/cliente" class="btn">Acompanhar pedido</a>
       `)
     });

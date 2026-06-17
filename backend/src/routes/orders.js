@@ -15,7 +15,7 @@ router.post('/',
   body('customer_name').trim().notEmpty(),
   body('customer_email').isEmail().normalizeEmail(),
   body('payment_method').isIn(['pix','credit_card','boleto','mercado_pago']),
-  body('ship_zip').trim().notEmpty(),
+  body('delivery_method').optional().isIn(['delivery', 'pickup']),
   validate,
   async (req, res, next) => {
     try {
@@ -24,7 +24,10 @@ router.post('/',
         customer_name, customer_email, customer_phone,
         ship_name, ship_zip, ship_street, ship_number,
         ship_complement, ship_neighborhood, ship_city, ship_state,
+        delivery_method,
       } = req.body;
+
+      const isPickup = delivery_method === 'pickup';
 
       /* Valida e calcula produtos */
       const productIds = items.map(i => i.product_id);
@@ -115,7 +118,8 @@ router.post('/',
       }
 
       /* Frete */
-      const shipping_cost = calcShipping(subtotal - discount, ship_state || '');
+      const PICKUP_ADDRESS = 'Rua Emílio Costa, nº 30 — Campestre da Serra, RS';
+      const shipping_cost = isPickup ? 0 : calcShipping(subtotal - discount, ship_state || '');
       const total = +(subtotal - discount + shipping_cost).toFixed(2);
       const order_number = generateOrderNumber();
       const maxDays = Math.max(...products.map(p => p.production_days || 7));
@@ -127,8 +131,16 @@ router.post('/',
         subtotal, discount, shipping_cost, total,
         coupon_id: couponId, coupon_code: couponId ? coupon_code : null,
         customer_name, customer_email, customer_phone: customer_phone || null,
-        ship_name: ship_name || customer_name, ship_zip, ship_street, ship_number,
-        ship_complement: ship_complement || null, ship_neighborhood, ship_city, ship_state,
+        delivery_method: isPickup ? 'pickup' : 'delivery',
+        pickup_address:  isPickup ? PICKUP_ADDRESS : null,
+        ship_name: ship_name || customer_name,
+        ship_zip:  isPickup ? null : ship_zip,
+        ship_street: isPickup ? null : ship_street,
+        ship_number: isPickup ? null : ship_number,
+        ship_complement:   isPickup ? null : (ship_complement || null),
+        ship_neighborhood: isPickup ? null : ship_neighborhood,
+        ship_city:  isPickup ? null : ship_city,
+        ship_state: isPickup ? null : ship_state,
       }).select().single();
       if (oErr) throw oErr;
 
@@ -151,7 +163,7 @@ router.post('/',
       /* E-mail de confirmação */
       mailer.sendOrderConfirmed({
         to: customer_email, name: customer_name,
-        order: { ...order, items: orderItems, production_days: maxDays }
+        order: { ...order, items: orderItems, production_days: maxDays, isPickup }
       }).catch(() => {});
 
       res.status(201).json({ order: { ...order, items: orderItems } });

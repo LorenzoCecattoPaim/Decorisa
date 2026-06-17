@@ -93,6 +93,7 @@
 .img-card-btn-cover { background:var(--color-bg);color:var(--color-text); }
 .img-card-btn-del { background:#A33;color:#fff; }
 .img-cover-badge { position:absolute;top:6px;left:6px;background:var(--color-text);color:var(--color-bg);font-size:8px;letter-spacing:0.12em;text-transform:uppercase;padding:2px 5px;font-family:var(--font-body);pointer-events:none; }
+.pickup-badge { display:inline-flex;align-items:center;gap:5px;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;padding:3px 8px;background:rgba(74,122,74,0.12);color:#4A7A4A;border:0.5px solid rgba(74,122,74,0.3);border-radius:2px;font-family:var(--font-body);white-space:nowrap; }
 .img-empty-state { font-size:12px;color:var(--color-text-light);font-family:var(--font-body);padding:10px 0; }
 
 </style>
@@ -731,7 +732,7 @@
       const { orders, total } = await api.orders.list({ status: orderFilter || undefined, page: orderPage, limit: 15, search });
       el.innerHTML = `
         <table class="admin-table">
-          <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Pagamento</th><th>Data</th><th>Ações</th></tr></thead>
+          <thead><tr><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Entrega</th><th>Pagamento</th><th>Data</th><th>Ações</th></tr></thead>
           <tbody>
             ${(orders || []).map(o => `
               <tr>
@@ -739,6 +740,7 @@
                 <td><div style="font-size:13px">${o.customer_name}</div><div style="font-size:11px;color:var(--color-text-light)">${o.customer_email}</div></td>
                 <td style="font-weight:500">${fmtPrice(o.total)}</td>
                 <td>${statusBadge(o.status)}</td>
+                <td>${o.delivery_method === 'pickup' ? '<span class="pickup-badge">🟢 Retirada</span>' : '<span style="font-size:11px;color:var(--color-text-light)">Envio</span>'}</td>
                 <td><span style="font-size:11px;color:var(--color-text-light)">${o.payment_status}</span></td>
                 <td style="font-size:12px;color:var(--color-text-light)">${fmtDate(o.created_at)}</td>
                 <td>
@@ -795,7 +797,15 @@
         <div style="background:var(--color-bg);border-radius:20px;padding:32px;max-width:580px;width:90%;max-height:80vh;overflow-y:auto;position:relative">
           <button onclick="document.getElementById('orderItemsModal').remove()" style="position:absolute;top:16px;right:20px;background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-muted)">×</button>
           <div style="font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:6px">Pedido ${order.order_number}</div>
-          <div style="font-size:18px;font-family:var(--font-display);font-weight:300;margin-bottom:24px">${order.customer_name}</div>
+          <div style="font-size:18px;font-family:var(--font-display);font-weight:300;margin-bottom:12px">${order.customer_name}</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+            ${order.delivery_method === 'pickup'
+              ? `<span class="pickup-badge">🟢 Retirada na Loja</span>
+                 <span style="font-size:11px;color:var(--color-text-light)">Rua Emílio Costa, nº 30 — Campestre da Serra, RS</span>`
+              : `<span style="font-size:11px;padding:3px 8px;background:var(--color-bg-alt);border:0.5px solid var(--color-border);color:var(--color-text-muted)">🚚 Entrega</span>
+                 ${order.ship_street ? `<span style="font-size:11px;color:var(--color-text-light)">${order.ship_street}, ${order.ship_number} — ${order.ship_city}/${order.ship_state}</span>` : ''}`
+            }
+          </div>
           <div style="display:flex;flex-direction:column;gap:16px">
             ${(order.order_items || []).map(i => {
               const customs = [];
@@ -1641,23 +1651,20 @@
     const palette = document.getElementById('adminColorsPalette');
     if (!palette) return;
     try {
-      // Usa rota pública para evitar problema de token expirado no formulário de produto
-      const { colors } = await api.products.customizationColors();
-      _adminColors = colors || [];
+      const { colors } = await api.products.adminCustomizationColors();
+      _adminColors = (colors || []).filter(c => c.active);
       renderAdminPalette();
-    } catch (err) {
-      console.error('[loadAdminColors] Cores da peça:', err);
+    } catch {
       if (palette) palette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores.</span>';
     }
-    // Marble colors — também usa rota pública
+    // Marble colors
     const mPalette = document.getElementById('adminMarbleColorsPalette');
     if (!mPalette) return;
     try {
-      const { colors: mc } = await api.products.marbleColors();
-      _adminMarbleColors = mc || [];
+      const { colors: mc } = await api.products.adminMarbleColors();
+      _adminMarbleColors = (mc || []).filter(c => c.active);
       renderAdminMarblePalette();
-    } catch (err) {
-      console.error('[loadAdminColors] Cores de marmorizado:', err);
+    } catch {
       if (mPalette) mPalette.innerHTML = '<span style="font-size:12px;color:#A33">Erro ao carregar cores de marmorizado.</span>';
     }
   }

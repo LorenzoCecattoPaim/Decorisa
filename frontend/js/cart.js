@@ -22,6 +22,7 @@ const Cart = (() => {
   let _shipping     = null;   // valor calculado (0 = grátis, null = não calculado)
   let _shippingQuote = null;  // { cep, standard, free_from, address } — persiste mesmo com carrinho vazio
   let _initialized  = false;
+  let _deliveryMethod = 'delivery'; // 'delivery' | 'pickup'
 
   const METALLIC_LABELS = {
     none:     'Nenhuma',
@@ -52,6 +53,11 @@ const Cart = (() => {
    * NÃO apaga o quote — apenas null-ifica _shipping quando vazio.
    */
   function _refreshShipping() {
+    // Retirada na loja: frete sempre zero
+    if (_deliveryMethod === 'pickup') {
+      _shipping = 0;
+      return;
+    }
     if (!_shippingQuote) {
       _shipping = null;
       return;
@@ -90,8 +96,9 @@ const Cart = (() => {
     try {
       localStorage.setItem(ITEMS_KEY, JSON.stringify(_items));
       localStorage.setItem(STATE_KEY, JSON.stringify({
-        coupon:        _coupon,
-        shippingQuote: _shippingQuote,
+        coupon:          _coupon,
+        shippingQuote:   _shippingQuote,
+        deliveryMethod:  _deliveryMethod,
         // Não salva _shipping — é derivado de _shippingQuote + subtotal
       }));
     } catch (e) {
@@ -113,6 +120,7 @@ const Cart = (() => {
       const state = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
       _coupon        = state.coupon        || null;
       _shippingQuote = state.shippingQuote || null;
+      _deliveryMethod = state.deliveryMethod || 'delivery';
     } catch {
       _coupon        = null;
       _shippingQuote = null;
@@ -178,6 +186,7 @@ const Cart = (() => {
     _coupon        = null;
     _shippingQuote = null;
     _shipping      = null;
+    _deliveryMethod = 'delivery';
     _save();
   }
 
@@ -226,6 +235,19 @@ const Cart = (() => {
       if (el) { el.textContent = message; el.style.color = '#A33'; }
     }
   }
+
+  function setDeliveryMethod(method) {
+    _deliveryMethod = (method === 'pickup') ? 'pickup' : 'delivery';
+    if (_deliveryMethod === 'pickup') {
+      // Pickup: set shipping to zero immediately, keep quote for if they switch back
+      _shipping = 0;
+    } else {
+      _refreshShipping(); // re-derive from quote
+    }
+    _save();
+  }
+
+  function getDeliveryMethod() { return _deliveryMethod; }
 
   function setShipping(cost) {
     const v = Number(cost);
@@ -489,7 +511,8 @@ const Cart = (() => {
         marble_color:   i.marble_color   || null,
         metallic_type:  i.metallic_type  || 'none',
       })),
-      coupon_code: _coupon?.code || null,
+      coupon_code:     _coupon?.code || null,
+      delivery_method: _deliveryMethod,
     };
   }
 
@@ -537,6 +560,8 @@ const Cart = (() => {
     calcularFrete,
     aplicarCupom,
     setShipping,
+    setDeliveryMethod,
+    getDeliveryMethod,
     setShippingFromResponse,
     clearShipping,
     syncShippingResult,

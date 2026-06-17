@@ -45,13 +45,7 @@ router.get('/marble-colors', async (req, res, next) => {
       .select('id,name,hex,sort_order')
       .eq('active', true)
       .order('sort_order');
-    // Tabela ainda não existe (migration não rodada) — retorna lista vazia em vez de erro
-    if (error) {
-      if (error.code === '42P01' || error.message?.includes('does not exist')) {
-        return res.json({ colors: [] });
-      }
-      throw error;
-    }
+    if (error) throw error;
     res.json({ colors: data });
   } catch (err) { next(err); }
 });
@@ -61,7 +55,7 @@ router.get('/admin/list', auth, adminOnly, async (req, res, next) => {
   try {
     const { page = 1, limit = 50 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    let { data, count, error } = await supabase
+    const { data, count, error } = await supabase
       .from('products')
       .select(`
         id, sku, name, slug, price, stock, active, featured,
@@ -72,22 +66,6 @@ router.get('/admin/list', auth, adminOnly, async (req, res, next) => {
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + Number(limit) - 1);
-
-    // Fallback sem marble colors se tabela não existe
-    if (error && (error.code === '42P01' || error.message?.includes('does not exist'))) {
-      const fb = await supabase
-        .from('products')
-        .select(`
-          id, sku, name, slug, price, stock, active, featured,
-          allow_customization, allow_colors, allow_marble, allow_metallic, metallic_price,
-          category:categories(id,slug,name),
-          available_colors:product_available_colors(color:customization_colors(id,name,hex))
-        `, { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(offset, offset + Number(limit) - 1);
-      data = fb.data; count = fb.count; error = fb.error;
-    }
-
     if (error) throw error;
     const products = (data || []).map(p => ({
       ...p,
@@ -151,12 +129,7 @@ router.get('/admin/marble-colors', auth, adminOnly, async (req, res, next) => {
   try {
     const { data, error } = await supabase
       .from('marble_colors').select('*').order('sort_order');
-    if (error) {
-      if (error.code === '42P01' || error.message?.includes('does not exist')) {
-        return res.json({ colors: [], _warning: 'Tabela marble_colors não existe. Execute a migration.' });
-      }
-      throw error;
-    }
+    if (error) throw error;
     res.json({ colors: data });
   } catch (err) { next(err); }
 });
@@ -246,8 +219,7 @@ router.get('/', async (req, res, next) => {
 /* GET /api/products/:slug */
 router.get('/:slug', async (req, res, next) => {
   try {
-    // Tenta com marble colors join
-    let { data: product, error } = await supabase
+    const { data: product, error } = await supabase
       .from('products')
       .select(`
         *,
@@ -261,25 +233,6 @@ router.get('/:slug', async (req, res, next) => {
       .eq('slug', req.params.slug)
       .eq('active', true)
       .single();
-
-    // Se erro de tabela não existente, tenta sem marble colors
-    if (error && (error.code === '42P01' || error.message?.includes('does not exist'))) {
-      const fallback = await supabase
-        .from('products')
-        .select(`
-          *,
-          category:categories(id,slug,name),
-          images:product_images(id,url,alt,is_cover,sort_order),
-          variants:product_variants(id,type,label,value,hex,sort_order,price_delta),
-          reviews(id,rating,title,body,created_at,approved,user:users(name)),
-          available_colors:product_available_colors(color:customization_colors(id,name,hex))
-        `)
-        .eq('slug', req.params.slug)
-        .eq('active', true)
-        .single();
-      product = fallback.data;
-      error   = fallback.error;
-    }
 
     if (error || !product) return res.status(404).json({ error: 'Produto não encontrado.' });
 

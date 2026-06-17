@@ -81,62 +81,107 @@
 
         <!-- PASSO 2: ENTREGA -->
         <div class="checkout-section" id="step2" style="display:none">
-          <h2 class="checkout-section-title">Endereço de entrega</h2>
+          <h2 class="checkout-section-title">Como deseja receber seu pedido?</h2>
 
-          <!-- Endereços salvos (se logado) -->
-          <div id="savedAddresses" style="display:none;margin-bottom:20px"></div>
-
-          <div class="form-group">
-            <label for="shipZip">CEP *</label>
-            <div style="display:flex;gap:8px">
-              <input type="text" id="shipZip" placeholder="00000-000" maxlength="9"
-                oninput="maskCEP(this)" required style="flex:1">
-              <button type="button" onclick="doFetchCEP()" class="btn-calcfrete">Buscar</button>
-            </div>
-            <span class="field-error" id="shipZipErr"></span>
-            <a href="https://buscacepinter.correios.com.br" target="_blank" rel="noopener"
-              style="font-size:11px;color:var(--color-text-light);margin-top:4px;display:inline-block">
-              Não sei meu CEP →
-            </a>
-          </div>
-          <div class="form-group">
-            <label for="shipStreet">Rua / Avenida *</label>
-            <input type="text" id="shipStreet" placeholder="Rua, Avenida..." required>
-            <span class="field-error" id="shipStreetErr"></span>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="shipNumber">Número *</label>
-              <input type="text" id="shipNumber" placeholder="123" required>
-              <span class="field-error" id="shipNumberErr"></span>
-            </div>
-            <div class="form-group">
-              <label for="shipComplement">Complemento</label>
-              <input type="text" id="shipComplement" placeholder="Apto, bloco, sala...">
-            </div>
-          </div>
-          <div class="form-group">
-            <label for="shipNeighborhood">Bairro *</label>
-            <input type="text" id="shipNeighborhood" placeholder="Bairro" required>
-            <span class="field-error" id="shipNeighborhoodErr"></span>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="shipCity">Cidade *</label>
-              <input type="text" id="shipCity" placeholder="Cidade" required>
-              <span class="field-error" id="shipCityErr"></span>
-            </div>
-            <div class="form-group">
-              <label for="shipState">Estado *</label>
-              <input type="text" id="shipState" placeholder="SP" maxlength="2" required style="text-transform:uppercase">
-              <span class="field-error" id="shipStateErr"></span>
-            </div>
+          <!-- Seletor de método de entrega -->
+          <div class="delivery-method-selector" id="deliveryMethodSelector">
+            <label class="delivery-method-option selected" id="dm-delivery" onclick="setDeliveryOption('delivery')">
+              <input type="radio" name="deliveryMethod" value="delivery" checked>
+              <div class="delivery-method-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v4h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              </div>
+              <div>
+                <strong>Entrega</strong>
+                <span>Receba em casa pela transportadora</span>
+              </div>
+            </label>
+            <label class="delivery-method-option" id="dm-pickup" onclick="setDeliveryOption('pickup')">
+              <input type="radio" name="deliveryMethod" value="pickup">
+              <div class="delivery-method-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              </div>
+              <div>
+                <strong>Retirar na Loja</strong>
+                <span>Sem frete — retire no seu horário</span>
+              </div>
+            </label>
           </div>
 
-          <!-- Opções de frete -->
-          <div id="shippingOptions" style="margin-top:20px;display:none">
-            <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:12px">Opção de frete</div>
-            <div id="shippingOptionsList"></div>
+          <!-- Painel: ENTREGA -->
+          <div id="panelDelivery">
+            <div id="savedAddresses" style="display:none;margin-bottom:20px"></div>
+            <div class="form-group">
+              <label for="shipZip">CEP *</label>
+              <div style="display:flex;gap:8px">
+                <input type="text" id="shipZip" placeholder="00000-000" maxlength="9"
+                  oninput="maskCEP(this)" style="flex:1">
+                <button type="button" onclick="doFetchCEP()" class="btn-calcfrete">Buscar</button>
+              </div>
+              <span class="field-error" id="shipZipErr"></span>
+              <a href="https://buscacepinter.correios.com.br" target="_blank" rel="noopener"
+                style="font-size:11px;color:var(--color-text-light);margin-top:4px;display:inline-block">
+                Não sei meu CEP →
+              </a>
+            </div>
+            <div class="form-group">
+              <label for="shipStreet">Rua / Avenida *</label>
+              <input type="text" id="shipStreet" placeholder="Rua, Avenida...">
+              <span class="field-error" id="shipStreetErr"></span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="shipNumber">Número *</label>
+                <input type="text" id="shipNumber" placeholder="123">
+                <span class="field-error" id="shipNumberErr"></span>
+              </div>
+              <div class="form-group">
+                <label for="shipComplement">Complemento</label>
+                <input type="text" id="shipComplement" placeholder="Apto, bloco, sala...">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="shipNeighborhood">Bairro *</label>
+              <input type="text" id="shipNeighborhood" placeholder="Bairro">
+              <span class="field-error" id="shipNeighborhoodErr"></span>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="shipCity">Cidade *</label>
+                <input type="text" id="shipCity" placeholder="Cidade">
+                <span class="field-error" id="shipCityErr"></span>
+              </div>
+              <div class="form-group">
+                <label for="shipState">Estado *</label>
+                <input type="text" id="shipState" placeholder="SP" maxlength="2" style="text-transform:uppercase">
+                <span class="field-error" id="shipStateErr"></span>
+              </div>
+            </div>
+            <div id="shippingOptions" style="margin-top:20px;display:none">
+              <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--color-text-light);margin-bottom:12px">Opção de frete</div>
+              <div id="shippingOptionsList"></div>
+            </div>
+          </div>
+
+          <!-- Painel: RETIRADA NA LOJA -->
+          <div id="panelPickup" style="display:none">
+            <div class="pickup-card">
+              <div class="pickup-card-header">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <span>Retirada disponível em</span>
+              </div>
+              <div class="pickup-address">
+                <strong>Rua Emílio Costa, nº 30</strong>
+                <span>Campestre da Serra — RS</span>
+              </div>
+              <div class="pickup-note">
+                Assim que seu pedido estiver pronto entraremos em contato para agendar a retirada.
+              </div>
+              <a href="https://www.google.com/maps/search/?api=1&query=Rua+Em%C3%ADlio+Costa+30+Campestre+da+Serra+RS"
+                target="_blank" rel="noopener" class="pickup-map-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                Ver localização no Google Maps
+              </a>
+            </div>
           </div>
 
           <div style="display:flex;gap:12px;margin-top:24px">
@@ -144,8 +189,7 @@
             <button type="button" onclick="goToStep(3)" class="btn-primary">Continuar para pagamento →</button>
           </div>
         </div>
-
-        <!-- PASSO 3: PAGAMENTO -->
+                <!-- PASSO 3: PAGAMENTO -->
         <div class="checkout-section" id="step3" style="display:none">
           <h2 class="checkout-section-title">Forma de pagamento</h2>
           <div class="payment-methods">
@@ -254,6 +298,61 @@
 .checkout-step.done span { background:#4A7A4A;color:#fff;border-color:#4A7A4A; }
 .checkout-step-line { flex:1;height:0.5px;background:var(--color-border);min-width:20px; }
 .field-error { display:block;font-size:11px;color:#A33;margin-top:4px;min-height:14px; }
+
+/* Delivery method selector */
+.delivery-method-selector { display:flex;flex-direction:column;gap:10px;margin-bottom:28px; }
+.delivery-method-option {
+  display:flex;align-items:center;gap:14px;padding:16px 18px;
+  border:0.5px solid var(--color-border);cursor:pointer;
+  transition:border-color 0.2s,background 0.2s;
+  background:var(--color-bg);
+}
+.delivery-method-option:hover { border-color:var(--color-border-mid); }
+.delivery-method-option.selected {
+  border-color:var(--color-text);background:var(--color-bg-alt);
+}
+.delivery-method-option input[type="radio"] { display:none; }
+.delivery-method-icon {
+  width:38px;height:38px;border-radius:50%;background:var(--color-bg-alt);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:0.5px solid var(--color-border);
+}
+.delivery-method-option.selected .delivery-method-icon {
+  background:var(--color-text);color:var(--color-bg);border-color:var(--color-text);
+}
+.delivery-method-option.selected .delivery-method-icon svg { stroke:var(--color-bg); }
+.delivery-method-option > div:last-child { display:flex;flex-direction:column;gap:3px; }
+.delivery-method-option strong { font-size:13px;font-weight:500;color:var(--color-text); }
+.delivery-method-option span { font-size:12px;color:var(--color-text-light); }
+
+/* Pickup card */
+.pickup-card {
+  border:0.5px solid var(--color-border);padding:28px 24px;
+  background:var(--color-bg-alt);margin-top:4px;
+}
+.pickup-card-header {
+  display:flex;align-items:center;gap:10px;
+  font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--color-text-light);margin-bottom:16px;
+}
+.pickup-address {
+  display:flex;flex-direction:column;gap:4px;margin-bottom:16px;
+}
+.pickup-address strong { font-size:16px;font-weight:400;font-family:var(--font-display);color:var(--color-text); }
+.pickup-address span { font-size:13px;color:var(--color-text-muted); }
+.pickup-note {
+  font-size:12px;color:var(--color-text-light);line-height:1.7;
+  padding:12px 14px;background:var(--color-bg);border:0.5px solid var(--color-border);
+  margin-bottom:20px;
+}
+.pickup-map-btn {
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--color-text);border-bottom:0.5px solid var(--color-border-mid);
+  padding-bottom:2px;text-decoration:none;
+  transition:border-color 0.2s;
+}
+.pickup-map-btn:hover { border-color:var(--color-text); }
 </style>
 
 <div class="toast" id="toast" role="alert" aria-live="polite"></div>
@@ -360,6 +459,25 @@
     `;
   }
 
+  /* === MÉTODO DE ENTREGA === */
+  window.setDeliveryOption = (method) => {
+    Cart.setDeliveryMethod(method);
+    ['delivery','pickup'].forEach(m => {
+      document.getElementById(`dm-${m}`)?.classList.toggle('selected', m === method);
+    });
+    const isPickup = method === 'pickup';
+    document.getElementById('panelDelivery').style.display = isPickup ? 'none' : 'block';
+    document.getElementById('panelPickup').style.display   = isPickup ? 'block' : 'none';
+    renderSummary();
+  };
+
+  // Restore delivery method from Cart state on load
+  const _storedMethod = Cart.getDeliveryMethod();
+  if (_storedMethod === 'pickup') {
+    // defer until DOM ready
+    setTimeout(() => setDeliveryOption('pickup'), 0);
+  }
+
   /* === STEPS === */
   window.goToStep = (n) => {
     if (n === 2 && !validateStep1()) return;
@@ -400,6 +518,9 @@
 
   function validateStep2() {
     clearErrors();
+    // Pickup: no address validation needed
+    if (Cart.getDeliveryMethod() === 'pickup') return true;
+
     let ok = true;
     const fields = [
       ['shipZip', 'CEP obrigatório'],
@@ -527,19 +648,20 @@
       }
     }
 
+    const _isPickup = Cart.getDeliveryMethod() === 'pickup';
     const payload = {
       ...Cart.getCheckoutPayload(),
       customer_name:  document.getElementById('cName').value.trim(),
       customer_email: document.getElementById('cEmail').value.trim(),
       customer_phone: document.getElementById('cPhone')?.value.trim() || null,
       payment_method: selectedPayment,
-      ship_zip:    document.getElementById('shipZip').value.replace(/\D/g,''),
-      ship_street: document.getElementById('shipStreet').value.trim(),
-      ship_number: document.getElementById('shipNumber').value.trim(),
-      ship_complement:   document.getElementById('shipComplement')?.value.trim() || null,
-      ship_neighborhood: document.getElementById('shipNeighborhood').value.trim(),
-      ship_city:  document.getElementById('shipCity').value.trim(),
-      ship_state: document.getElementById('shipState').value.trim().toUpperCase(),
+      ship_zip:    _isPickup ? null : document.getElementById('shipZip').value.replace(/\D/g,''),
+      ship_street: _isPickup ? null : document.getElementById('shipStreet').value.trim(),
+      ship_number: _isPickup ? null : document.getElementById('shipNumber').value.trim(),
+      ship_complement:   _isPickup ? null : (document.getElementById('shipComplement')?.value.trim() || null),
+      ship_neighborhood: _isPickup ? null : document.getElementById('shipNeighborhood').value.trim(),
+      ship_city:  _isPickup ? null : document.getElementById('shipCity').value.trim(),
+      ship_state: _isPickup ? null : document.getElementById('shipState').value.trim().toUpperCase(),
     };
 
     try {
@@ -592,6 +714,15 @@
             <span>Forma de pagamento</span>
             <span>${{ pix:'Pix', credit_card:'Cartão', boleto:'Boleto', mercado_pago:'Mercado Pago' }[order.payment_method] || order.payment_method}</span>
           </div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--color-text-muted);margin-top:8px">
+            <span>Entrega</span>
+            <span>${order.delivery_method === 'pickup' ? 'Retirada na Loja' : 'Envio'}</span>
+          </div>
+          ${order.delivery_method === 'pickup' ? `
+          <div style="margin-top:12px;padding:12px 14px;background:var(--color-bg);border:0.5px solid var(--color-border);font-size:12px;color:var(--color-text-muted);line-height:1.7">
+            📍 Rua Emílio Costa, nº 30 — Campestre da Serra, RS<br>
+            Entraremos em contato para agendar a retirada.
+          </div>` : ''}
         </div>
       </div>
     `;
