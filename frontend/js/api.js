@@ -95,7 +95,6 @@ const api = {
       if (order) params.set('order', order);
       if (page) params.set('page', page);
       if (limit) params.set('limit', limit);
-      if (product_type) params.set('product_type', product_type);
       return get(`/products?${params}`);
     },
     async adminList({ page, limit, product_type } = {}) {

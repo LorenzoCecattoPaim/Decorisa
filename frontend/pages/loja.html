@@ -297,7 +297,8 @@
       if (countEl) countEl.textContent = `${total} ${total === 1 ? 'produto' : 'produtos'}`;
       renderPagination(total);
       initReveal();
-    } catch {
+    } catch (err) {
+      console.error('[Decorisa] Erro ao carregar produtos:', err);
       grid.style.opacity = '1';
       grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#A33;padding:48px 0;font-size:14px">Erro ao carregar produtos. Tente novamente.</p>';
     }
