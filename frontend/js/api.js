@@ -95,12 +95,14 @@ const api = {
       if (order) params.set('order', order);
       if (page) params.set('page', page);
       if (limit) params.set('limit', limit);
+      if (product_type) params.set('product_type', product_type);
       return get(`/products?${params}`);
     },
-    async adminList({ page, limit } = {}) {
+    async adminList({ page, limit, product_type } = {}) {
       const params = new URLSearchParams();
       if (page) params.set('page', page);
       if (limit) params.set('limit', limit);
+      if (product_type) params.set('product_type', product_type);
       return get(`/products/admin/list?${params}`, true);
     },
     async get(slug) {
@@ -297,7 +299,7 @@ const api = {
     async get(slug) {
       return get(`/launches/${slug}`);
     },
-    async adminList({ page, limit } = {}) {
+    async adminList({ page, limit, product_type } = {}) {
       const p = new URLSearchParams();
       if (page) p.set('page', page);
       if (limit) p.set('limit', limit);

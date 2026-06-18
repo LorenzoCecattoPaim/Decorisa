@@ -161,12 +161,16 @@ adminRouter.get('/metrics', auth, adminOnly, async (req, res, next) => {
       { data: revenueData },
       { count: totalProducts },
       { count: totalClients },
+      { count: stockProducts },
+      { count: mtoProducts },
     ] = await Promise.all([
       supabase.from('orders').select('*', { count: 'exact', head: true }),
       supabase.from('orders').select('*', { count: 'exact', head: true }).in('status',['pending','confirmed','in_production']),
       supabase.from('orders').select('total').eq('payment_status','paid'),
       supabase.from('products').select('*', { count: 'exact', head: true }).eq('active',true),
       supabase.from('users').select('*', { count: 'exact', head: true }).eq('role','customer'),
+      supabase.from('products').select('*', { count: 'exact', head: true }).eq('active',true).eq('product_type','stock'),
+      supabase.from('products').select('*', { count: 'exact', head: true }).eq('active',true).eq('product_type','made_to_order'),
     ]);
 
     const revenue = (revenueData || []).reduce((s, o) => s + Number(o.total), 0);
@@ -178,6 +182,8 @@ adminRouter.get('/metrics', auth, adminOnly, async (req, res, next) => {
         revenue: +revenue.toFixed(2),
         total_products: totalProducts,
         total_clients: totalClients,
+        stock_products: stockProducts || 0,
+        mto_products: mtoProducts || 0,
       }
     });
   } catch (err) { next(err); }
@@ -185,7 +191,7 @@ adminRouter.get('/metrics', auth, adminOnly, async (req, res, next) => {
 
 adminRouter.get('/low-stock', auth, adminOnly, async (req, res, next) => {
   try {
-    const { data, error } = await supabase.from('products').select('id,name,sku,stock').lt('stock', 5).eq('active', true);
+    const { data, error } = await supabase.from('products').select('id,name,sku,stock').lt('stock', 5).eq('active', true).eq('product_type', 'stock');
     if (error) throw error;
     res.json({ products: data });
   } catch (err) { next(err); }

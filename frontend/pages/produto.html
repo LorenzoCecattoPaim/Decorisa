@@ -495,11 +495,23 @@
               <span class="qty-val" id="qtyDisplay">1</span>
               <button class="qty-btn" onclick="changeLocalQty(1)"  aria-label="Aumentar">+</button>
             </div>
-            <p style="font-size:11px;color:${product.stock < 5 ? '#8A5A18' : 'var(--color-text-light)'};margin-top:6px">
-              ${product.stock < 5
-                ? `⚠ Apenas ${product.stock} disponíveis`
-                : `${product.stock} em estoque`}
-            </p>
+
+            ${product.product_type === 'stock'
+              ? `<p style="font-size:11px;color:${product.stock < 5 ? '#8A5A18' : '#4A7A4A'};margin-top:6px;display:flex;align-items:center;gap:5px">
+                  ${product.stock === 0
+                    ? '<span style="color:#A33">✗ Produto fora de estoque</span>'
+                    : product.stock < 5
+                      ? `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Restam apenas ${product.stock} unidades`
+                      : '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Em estoque'}
+                </p>`
+              : `<div style="margin-top:10px;padding:12px 14px;background:rgba(var(--color-text-rgb,30,27,24),0.03);border-left:2px solid var(--color-text);border-radius:0 4px 4px 0">
+                  <p style="font-size:12px;font-weight:500;margin:0 0 3px;letter-spacing:0.03em;display:flex;align-items:center;gap:6px">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Produzido sob encomenda
+                  </p>
+                  <p style="font-size:11px;color:var(--color-text-muted);margin:0;line-height:1.5">Peça artesanal confeccionada especialmente para você após a confirmação do pedido.${product.production_days ? ` Prazo estimado: ${product.production_days} dias úteis.` : ''}</p>
+                </div>`
+            }
           </div>
         ` : ''}
 
@@ -605,7 +617,8 @@
   };
 
   window.changeLocalQty = (delta) => {
-    localQty = Math.max(1, Math.min(localQty + delta, product.stock || 99));
+    const maxQty = (product.product_type === 'stock') ? (product.stock || 0) : 99;
+    localQty = Math.max(1, Math.min(localQty + delta, maxQty || 99));
     const el = document.getElementById('qtyDisplay');
     if (el) el.textContent = localQty;
   };

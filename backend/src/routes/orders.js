@@ -33,7 +33,7 @@ router.post('/',
       const productIds = items.map(i => i.product_id);
       const { data: products, error: pErr } = await supabase
         .from('products')
-        .select('id,name,sku,price,stock,production_days,allow_customization,allow_colors,allow_marble,allow_metallic,metallic_price,category:categories(slug)')
+        .select('id,name,sku,price,price_pix,stock,production_days,product_type,allow_customization,allow_colors,allow_marble,allow_metallic,metallic_price,category:categories(slug)')
         .in('id', productIds);
       if (pErr) throw pErr;
 
@@ -43,7 +43,7 @@ router.post('/',
       for (const item of items) {
         const prod = products.find(p => p.id === item.product_id);
         if (!prod) return res.status(400).json({ error: `Produto não encontrado: ${item.product_id}` });
-        if (prod.stock < item.quantity) return res.status(400).json({ error: `Estoque insuficiente para "${prod.name}".` });
+        if (prod.product_type !== 'made_to_order' && prod.stock < item.quantity) return res.status(400).json({ error: `Estoque insuficiente para "${prod.name}".` });
 
         // Personalização: calcular preço extra
         let customization_price = 0;
@@ -85,6 +85,7 @@ router.post('/',
           product_id: prod.id,
           product_name: prod.name,
           product_sku: prod.sku,
+          product_type: prod.product_type || 'made_to_order',
           variant_color: item.variant_color || null,
           variant_size: item.variant_size || null,
           quantity: item.quantity,
@@ -149,10 +150,12 @@ router.post('/',
         .insert(orderItems.map(i => ({ ...i, order_id: order.id })));
       if (iErr) throw iErr;
 
-      /* Decrementa estoque */
+      /* Decrementa estoque apenas para produtos em estoque */
       for (const item of items) {
         const prod = products.find(p => p.id === item.product_id);
-        await supabase.from('products').update({ stock: prod.stock - item.quantity }).eq('id', prod.id);
+        if (prod.product_type !== 'made_to_order') {
+          await supabase.from('products').update({ stock: prod.stock - item.quantity }).eq('id', prod.id);
+        }
       }
 
       /* Incrementa uso do cupom */
@@ -217,6 +220,7 @@ router.get('/', auth, adminOnly, async (req, res, next) => {
 
     if (status) q = q.eq('status', status);
     if (search) q = q.or(`order_number.ilike.%${search}%,customer_name.ilike.%${search}%,customer_email.ilike.%${search}%`);
+    // Filtro por tipo de produto pode ser feito na camada do frontend por product_type dos items
 
     const { data, count, error } = await q;
     if (error) throw error;

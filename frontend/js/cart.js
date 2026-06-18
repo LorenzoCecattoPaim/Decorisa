@@ -142,15 +142,17 @@ const Cart = (() => {
 
     const ex = _items.find(i => i.key === key);
     if (ex) {
-      ex.qty = Math.min(ex.qty + qty, product.stock || 99);
+      const maxQ = (product.product_type === 'stock') ? (product.stock || 0) : 99;
+      ex.qty = Math.min(ex.qty + qty, maxQ || 99);
     } else {
       _items.push({
         key,
-        id:    product.id,
-        slug:  product.slug,
-        name:  product.name,
-        price: Number(product.price),
-        stock: product.stock || 99,
+        id:           product.id,
+        slug:         product.slug,
+        name:         product.name,
+        price:        Number(product.price),
+        stock:        product.stock || 99,
+        product_type: product.product_type || 'made_to_order',
         qty,
         color: color || c.selected_color || null,
         size:  size || null,
@@ -177,7 +179,8 @@ const Cart = (() => {
   function changeQty(key, delta) {
     const item = _items.find(i => i.key === key);
     if (!item) return;
-    item.qty = Math.max(1, Math.min(item.qty + delta, item.stock));
+    const maxQty = (item.product_type === 'stock') ? item.stock : 99;
+    item.qty = Math.max(1, Math.min(item.qty + delta, maxQty || 99));
     _save(); // _refreshShipping recalcula frete grátis se subtotal mudar
   }
 
@@ -353,6 +356,12 @@ const Cart = (() => {
           <div class="cart-item-info">
             <div class="cart-item-name">${item.name}</div>
             ${item.size ? `<div class="cart-item-variant">${item.size}</div>` : ''}
+            ${(item.product_type || 'made_to_order') !== 'stock'
+              ? `<div style="font-size:10px;color:var(--color-text-muted);letter-spacing:0.04em;margin-bottom:4px;display:flex;align-items:center;gap:4px">
+                   <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                   Produção sob encomenda
+                 </div>`
+              : ''}
             ${customLine}
             <div class="cart-item-qty">
               <button onclick="Cart.changeQty('${item.key}',-1)" aria-label="Diminuir quantidade">−</button>

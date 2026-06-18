@@ -9,6 +9,9 @@ const CUSTOM_FIELDS = [
   'allow_customization','allow_colors','allow_marble','allow_metallic','metallic_price'
 ];
 
+/* Tipo de produto */
+const PRODUCT_TYPE_FIELDS = ['product_type'];
+
 /* ================================================================
    ROTAS ESTÁTICAS — devem vir ANTES de qualquer /:param
    (Express resolve rotas em ordem; /:slug engoleria /categories etc.)
@@ -53,12 +56,13 @@ router.get('/marble-colors', async (req, res, next) => {
 /* GET /api/products/admin/list (admin) */
 router.get('/admin/list', auth, adminOnly, async (req, res, next) => {
   try {
-    const { page = 1, limit = 50 } = req.query;
+    const { page = 1, limit = 50, product_type: filterType } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
-    const { data, count, error } = await supabase
+
+    let q = supabase
       .from('products')
       .select(`
-        id, sku, name, slug, price, stock, active, featured,
+        id, sku, name, slug, price, stock, active, featured, product_type,
         allow_customization, allow_colors, allow_marble, allow_metallic, metallic_price,
         category:categories(id,slug,name),
         available_colors:product_available_colors(color:customization_colors(id,name,hex)),
@@ -66,6 +70,12 @@ router.get('/admin/list', auth, adminOnly, async (req, res, next) => {
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + Number(limit) - 1);
+
+    if (filterType && ['stock','made_to_order'].includes(filterType)) {
+      q = q.eq('product_type', filterType);
+    }
+
+    const { data, count, error } = await q;
     if (error) throw error;
     const products = (data || []).map(p => ({
       ...p,
@@ -189,7 +199,7 @@ router.get('/', async (req, res, next) => {
     let q = supabase
       .from('products')
       .select(`
-        id, sku, name, slug, price, price_pix, material, stock, badge, featured, active,
+        id, sku, name, slug, price, price_pix, material, stock, badge, featured, active, product_type,
         allow_customization, allow_colors, allow_marble, allow_metallic, metallic_price,
         category:categories(id,slug,name),
         images:product_images(url,alt,is_cover),
@@ -273,7 +283,7 @@ router.post('/', auth, adminOnly,
         'stock','badge','featured','active'
       ];
       const payload = Object.fromEntries(
-        [...baseFields, ...CUSTOM_FIELDS]
+        [...baseFields, ...CUSTOM_FIELDS, ...PRODUCT_TYPE_FIELDS]
           .filter(f => req.body[f] !== undefined)
           .map(f => [f, req.body[f]])
       );
@@ -287,6 +297,9 @@ router.post('/', auth, adminOnly,
           payload.allow_colors        = false;
           payload.allow_marble        = false;
           payload.allow_metallic      = false;
+          if (!payload.product_type) payload.product_type = 'stock';
+        } else {
+          if (!payload.product_type) payload.product_type = 'made_to_order';
         }
       }
 
@@ -319,7 +332,7 @@ router.put('/:id', auth, adminOnly, async (req, res, next) => {
       'stock','badge','featured','active'
     ];
     const payload = Object.fromEntries(
-      [...baseFields, ...CUSTOM_FIELDS]
+      [...baseFields, ...CUSTOM_FIELDS, ...PRODUCT_TYPE_FIELDS]
         .filter(f => req.body[f] !== undefined)
         .map(f => [f, req.body[f]])
     );
