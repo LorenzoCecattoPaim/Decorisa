@@ -209,6 +209,8 @@
   let marbleEnabled  = false;
   let marbleColor    = null;  // nome da cor do marmorizado
   let marbleColorHex = null;  // hex da cor do marmorizado
+  let preMarbleColor    = null; // cor da peça escolhida antes de ativar marmorizado (para restaurar)
+  let preMarbleColorHex = null;
   let metallicType   = 'none'; // 'none' | 'ouro' | 'prata' | 'rose_gold'
   let metallicPrice  = 0;
 
@@ -359,28 +361,6 @@
           <div class="eyebrow"><span class="eyebrow-line"></span>Personalize sua peça</div>
           <h2 class="product-customize-title">Faça sua escolha de <em>acabamento</em></h2>
 
-          ${product.allow_colors && product.available_colors?.length ? `
-          <div class="customize-group" id="groupCor">
-            <div class="customize-group-label">
-              Cor
-              <span class="selected-value" id="selectedColorLabel">${product.available_colors[0]?.name || ''}</span>
-            </div>
-            <div class="color-swatches">
-              ${product.available_colors.map((c, i) => `
-                <button class="color-swatch ${i===0?'selected':''}"
-                  data-name="${c.name}"
-                  data-hex="${c.hex}"
-                  style="background:${c.hex}"
-                  title="${c.name}"
-                  onclick="selectCustomColor(this)"
-                  aria-label="${c.name}"
-                  aria-pressed="${i===0}">
-                </button>
-              `).join('')}
-            </div>
-          </div>
-          ` : ''}
-
           ${product.allow_marble ? `
           <div class="customize-group" id="groupMarmore">
             <div class="customize-group-label">Efeito Marmorizado</div>
@@ -393,7 +373,35 @@
               <span class="marble-toggle-desc" id="marbleDesc">Não — acabamento liso</span>
             </div>
           </div>
-          ${product.available_marble_colors?.length ? `
+          ` : ''}
+
+          ${product.allow_colors && product.available_colors?.length ? `
+          <div class="customize-group" id="groupCor">
+            <div class="customize-group-label">
+              Cor da Peça
+              <span class="selected-value" id="selectedColorLabel">${product.available_colors[0]?.name || ''}</span>
+            </div>
+            <div class="color-swatches" id="colorSwatchesWrap">
+              ${product.available_colors.map((c, i) => `
+                <button class="color-swatch ${i===0?'selected':''}"
+                  data-name="${c.name}"
+                  data-hex="${c.hex}"
+                  style="background:${c.hex}"
+                  title="${c.name}"
+                  onclick="selectCustomColor(this)"
+                  aria-label="${c.name}"
+                  aria-pressed="${i===0}">
+                </button>
+              `).join('')}
+            </div>
+            <div class="customize-group-locked" id="colorLockedNotice" style="display:none;align-items:center;gap:8px;font-size:11px;color:var(--color-text-muted);margin-top:4px">
+              <span style="width:18px;height:18px;border-radius:50%;background:#F9F7F4;border:1px solid var(--color-border);display:inline-block;flex-shrink:0"></span>
+              Peça base em Branco — cor automática para o efeito marmorizado
+            </div>
+          </div>
+          ` : ''}
+
+          ${product.allow_marble && product.available_marble_colors?.length ? `
           <div class="customize-group" id="groupMarmoreCor" style="display:none">
             <div class="customize-group-label">
               Cor do Marmorizado
@@ -413,7 +421,6 @@
               `).join('')}
             </div>
           </div>
-          ` : ''}
           ` : ''}
 
           ${product.allow_metallic ? `
@@ -635,7 +642,8 @@
   };
 
   window.selectCustomColor = (el) => {
-    document.querySelectorAll('.color-swatch').forEach(c => {
+    if (marbleEnabled) return; // cor da peça travada em Branco enquanto marmorizado ativo
+    document.querySelectorAll('#colorSwatchesWrap .color-swatch').forEach(c => {
       c.classList.remove('selected');
       c.setAttribute('aria-pressed', 'false');
     });
@@ -655,7 +663,40 @@
     if (groupMarbleColor) {
       groupMarbleColor.style.display = marbleEnabled ? 'block' : 'none';
     }
-    if (!marbleEnabled) {
+
+    // Trava a cor da peça em Branco quando o marmorizado é ativado
+    const swatchesWrap  = document.getElementById('colorSwatchesWrap');
+    const lockedNotice  = document.getElementById('colorLockedNotice');
+    const colorLabel    = document.getElementById('selectedColorLabel');
+
+    if (marbleEnabled) {
+      // Salva a cor escolhida pelo cliente para restaurar caso desative o marmorizado
+      preMarbleColor    = customColor;
+      preMarbleColorHex = customColorHex;
+
+      customColor    = 'Branco';
+      customColorHex = '#F9F7F4';
+
+      if (swatchesWrap) swatchesWrap.style.display = 'none';
+      if (lockedNotice) lockedNotice.style.display = 'flex';
+      if (colorLabel)   colorLabel.textContent = 'Branco (automático)';
+    } else {
+      // Restaura cor anterior do cliente, se houver
+      if (preMarbleColor) {
+        customColor    = preMarbleColor;
+        customColorHex = preMarbleColorHex;
+      }
+      if (swatchesWrap) swatchesWrap.style.display = '';
+      if (lockedNotice) lockedNotice.style.display = 'none';
+      if (colorLabel)   colorLabel.textContent = customColor || '';
+
+      // Re-sincroniza visual dos swatches de cor com customColor
+      document.querySelectorAll('#colorSwatchesWrap .color-swatch').forEach(s => {
+        const match = s.dataset.name === customColor;
+        s.classList.toggle('selected', match);
+        s.setAttribute('aria-pressed', match ? 'true' : 'false');
+      });
+
       marbleColor = null;
       marbleColorHex = null;
       document.querySelectorAll('.marble-color-swatch').forEach(s => {

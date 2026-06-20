@@ -398,10 +398,12 @@
 
     function buildCustomTags(i) {
       const tags = [];
-      if (i.selected_color) {
+      if (i.marble_enabled) {
+        tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex('Branco')};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>Base: Branco</span>`);
+        tags.push(`<span class="checkout-custom-tag">Marmorizado${i.marble_color ? `: ${i.marble_color}` : ''}</span>`);
+      } else if (i.selected_color) {
         tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex(i.selected_color)};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>${i.selected_color}</span>`);
       }
-      if (i.marble_enabled) tags.push(`<span class="checkout-custom-tag">Marmorizado</span>`);
       if (i.metallic_type && i.metallic_type !== 'none') {
         tags.push(`<span class="checkout-custom-tag">${METALLIC_LABELS[i.metallic_type] || i.metallic_type}</span>`);
       }

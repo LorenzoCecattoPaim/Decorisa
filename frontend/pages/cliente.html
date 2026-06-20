@@ -360,9 +360,11 @@
           <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:10px">
             ${(o.order_items || []).map(i => {
               const parts = [i.product_name + ' × ' + i.quantity];
-              if (i.selected_color) parts.push(`Cor: ${i.selected_color}`);
               if (i.marble_enabled) {
+                parts.push('Base: Branco');
                 parts.push(i.marble_color ? `Marmorizado: ${i.marble_color}` : 'Marmorizado');
+              } else if (i.selected_color) {
+                parts.push(`Cor: ${i.selected_color}`);
               }
               if (i.metallic_type && i.metallic_type !== 'none') {
                 const ml = {ouro:'Folha Ouro',prata:'Folha Prata',rose_gold:'Folha Rosé Gold'};
@@ -396,8 +398,12 @@
       const itemsText = (order.order_items || []).map(i => {
         let line = `${i.product_name} × ${i.quantity} — ${fmtPrice(i.total_price)}`;
         const customs = [];
-        if (i.selected_color) customs.push(`Cor: ${i.selected_color}`);
-        if (i.marble_enabled) customs.push(i.marble_color ? `Marmorizado: ${i.marble_color}` : 'Marmorizado');
+        if (i.marble_enabled) {
+          customs.push('Base: Branco');
+          customs.push(i.marble_color ? `Marmorizado: ${i.marble_color}` : 'Marmorizado');
+        } else if (i.selected_color) {
+          customs.push(`Cor: ${i.selected_color}`);
+        }
         if (i.metallic_type && i.metallic_type !== 'none') customs.push(METALLIC_LABELS[i.metallic_type] || i.metallic_type);
         if (customs.length) line += `\n  ↳ ${customs.join(' · ')}`;
         return line;

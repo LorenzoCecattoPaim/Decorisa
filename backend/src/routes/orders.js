@@ -55,10 +55,6 @@ router.post('/',
         const isCandle = prod.category?.slug === 'velas';
 
         if (prod.allow_customization && !isCandle) {
-          // Cor
-          if (item.selected_color && prod.allow_colors) {
-            selected_color = item.selected_color;
-          }
           // Marmorizado
           if (item.marble_enabled && prod.allow_marble) {
             marble_enabled = true;
@@ -66,6 +62,12 @@ router.post('/',
             if (item.marble_color) {
               marble_color = item.marble_color;
             }
+            // Regra de negócio: quando marmorizado ativo, a peça base é sempre Branco
+            // e o cliente não pode escolher outra cor principal.
+            selected_color = 'Branco';
+          } else if (item.selected_color && prod.allow_colors) {
+            // Cor da peça (somente quando NÃO está marmorizado)
+            selected_color = item.selected_color;
           }
           // Folha metálica
           if (item.metallic_type && item.metallic_type !== 'none' && prod.allow_metallic) {

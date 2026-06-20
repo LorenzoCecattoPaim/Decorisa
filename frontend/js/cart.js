@@ -308,15 +308,16 @@ const Cart = (() => {
 
   function _buildCustomizationLine(item) {
     const parts = [];
-    if (item.selected_color) {
-      parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.selected_color)}"></span>${item.selected_color}</span>`);
-    }
     if (item.marble_enabled) {
+      // Quando marmorizado, a peça base é sempre Branco (regra de negócio)
+      parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex('Branco')}"></span>Base: Branco</span>`);
       if (item.marble_color) {
         parts.push(`<span class="cart-custom-tag">Marmorizado: ${item.marble_color}</span>`);
       } else {
         parts.push(`<span class="cart-custom-tag">Marmorizado</span>`);
       }
+    } else if (item.selected_color) {
+      parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.selected_color)}"></span>${item.selected_color}</span>`);
     }
     if (item.metallic_type && item.metallic_type !== 'none') {
       parts.push(`<span class="cart-custom-tag">${METALLIC_LABELS[item.metallic_type] || item.metallic_type}</span>`);

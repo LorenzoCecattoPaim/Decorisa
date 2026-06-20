@@ -835,10 +835,11 @@
           <div style="display:flex;flex-direction:column;gap:16px">
             ${(order.order_items || []).map(i => {
               const customs = [];
-              if (i.selected_color) customs.push({ label: 'Cor', value: i.selected_color });
               if (i.marble_enabled) {
-                const mv = i.marble_color ? `Sim — ${i.marble_color}` : 'Sim';
-                customs.push({ label: 'Marmorizado', value: mv });
+                customs.push({ label: 'Base', value: 'Branco (automático)' });
+                customs.push({ label: 'Cor do Marmorizado', value: i.marble_color || '—' });
+              } else if (i.selected_color) {
+                customs.push({ label: 'Cor', value: i.selected_color });
               }
               if (i.metallic_type && i.metallic_type !== 'none') customs.push({ label: 'Folha', value: METALLIC_LABELS[i.metallic_type] || i.metallic_type });
               return `
