@@ -361,14 +361,14 @@
             ${(o.order_items || []).map(i => {
               const parts = [i.product_name + ' × ' + i.quantity];
               if (i.marble_enabled) {
-                parts.push('Base: Branco');
-                parts.push(i.marble_color ? `Marmorizado: ${i.marble_color}` : 'Marmorizado');
-              } else if (i.selected_color) {
-                parts.push(`Cor: ${i.selected_color}`);
-              }
-              if (i.metallic_type && i.metallic_type !== 'none') {
-                const ml = {ouro:'Folha Ouro',prata:'Folha Prata',rose_gold:'Folha Rosé Gold'};
-                parts.push(ml[i.metallic_type] || i.metallic_type);
+                parts.push('Acabamento: Marmorizado');
+                if (i.marble_color) parts.push(`Cor do Marmorizado: ${i.marble_color}`);
+              } else {
+                if (i.selected_color) parts.push(`Cor: ${i.selected_color}`);
+                if (i.metallic_type && i.metallic_type !== 'none') {
+                  const ml = {ouro:'Folha Ouro',prata:'Folha Prata',rose_gold:'Folha Rosé Gold'};
+                  parts.push(`Folha: ${ml[i.metallic_type] || i.metallic_type}`);
+                }
               }
               return parts.join(' · ');
             }).join('<br>')}
@@ -399,12 +399,12 @@
         let line = `${i.product_name} × ${i.quantity} — ${fmtPrice(i.total_price)}`;
         const customs = [];
         if (i.marble_enabled) {
-          customs.push('Base: Branco');
-          customs.push(i.marble_color ? `Marmorizado: ${i.marble_color}` : 'Marmorizado');
-        } else if (i.selected_color) {
-          customs.push(`Cor: ${i.selected_color}`);
+          customs.push('Acabamento: Marmorizado');
+          if (i.marble_color) customs.push(`Cor do Marmorizado: ${i.marble_color}`);
+        } else {
+          if (i.selected_color) customs.push(`Cor: ${i.selected_color}`);
+          if (i.metallic_type && i.metallic_type !== 'none') customs.push(`Folha: ${METALLIC_LABELS[i.metallic_type] || i.metallic_type}`);
         }
-        if (i.metallic_type && i.metallic_type !== 'none') customs.push(METALLIC_LABELS[i.metallic_type] || i.metallic_type);
         if (customs.length) line += `\n  ↳ ${customs.join(' · ')}`;
         return line;
       }).join('\n');

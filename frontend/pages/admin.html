@@ -836,12 +836,12 @@
             ${(order.order_items || []).map(i => {
               const customs = [];
               if (i.marble_enabled) {
-                customs.push({ label: 'Base', value: 'Branco (automático)' });
+                customs.push({ label: 'Acabamento', value: 'Marmorizado' });
                 customs.push({ label: 'Cor do Marmorizado', value: i.marble_color || '—' });
-              } else if (i.selected_color) {
-                customs.push({ label: 'Cor', value: i.selected_color });
+              } else {
+                if (i.selected_color) customs.push({ label: 'Cor', value: i.selected_color });
+                if (i.metallic_type && i.metallic_type !== 'none') customs.push({ label: 'Folha', value: METALLIC_LABELS[i.metallic_type] || i.metallic_type });
               }
-              if (i.metallic_type && i.metallic_type !== 'none') customs.push({ label: 'Folha', value: METALLIC_LABELS[i.metallic_type] || i.metallic_type });
               return `
                 <div style="padding:16px;border:0.5px solid var(--color-border);border-radius:12px">
                   <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:${customs.length?'12px':'0'}">

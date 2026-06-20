@@ -65,16 +65,19 @@ router.post('/',
             // Regra de negócio: quando marmorizado ativo, a peça base é sempre Branco
             // e o cliente não pode escolher outra cor principal.
             selected_color = 'Branco';
-          } else if (item.selected_color && prod.allow_colors) {
+            // Marmorizado e folha metálica são mutuamente exclusivos — folha é ignorada.
+          } else {
             // Cor da peça (somente quando NÃO está marmorizado)
-            selected_color = item.selected_color;
-          }
-          // Folha metálica
-          if (item.metallic_type && item.metallic_type !== 'none' && prod.allow_metallic) {
-            const validTypes = ['ouro','prata','rose_gold'];
-            if (validTypes.includes(item.metallic_type)) {
-              metallic_type = item.metallic_type;
-              customization_price += Number(prod.metallic_price) || 15;
+            if (item.selected_color && prod.allow_colors) {
+              selected_color = item.selected_color;
+            }
+            // Folha metálica (somente quando NÃO está marmorizado)
+            if (item.metallic_type && item.metallic_type !== 'none' && prod.allow_metallic) {
+              const validTypes = ['ouro','prata','rose_gold'];
+              if (validTypes.includes(item.metallic_type)) {
+                metallic_type = item.metallic_type;
+                customization_price += Number(prod.metallic_price) || 15;
+              }
             }
           }
         }

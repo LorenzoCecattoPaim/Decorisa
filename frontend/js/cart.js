@@ -296,8 +296,20 @@ const Cart = (() => {
 
   function _getColorHex(colorName) {
     const map = {
-      'Branco':      '#F9F7F4',
-      'Bege':        '#E8DFD0',
+      // Cor da Peça
+      'Branco':  '#F9F7F4',
+      'Bege':    '#E8DFD0',
+      'Cinza':   '#A8A39B',
+      'Marrom':  '#6B4F3A',
+      'Rosa':    '#E3B7C0',
+      'Laranja': '#D98A4E',
+      'Amarelo': '#E8C547',
+      'Verde':   '#6B8F71',
+      'Azul':    '#5B7E9B',
+      'Roxo':    '#8669A0',
+      // Cor do Marmorizado
+      'Creme':   '#EFE6D5',
+      // legado
       'Areia':       '#C9B99A',
       'Cinza Claro': '#C0BBB4',
       'Cinza Escuro':'#6B6560',
@@ -309,18 +321,18 @@ const Cart = (() => {
   function _buildCustomizationLine(item) {
     const parts = [];
     if (item.marble_enabled) {
-      // Quando marmorizado, a peça base é sempre Branco (regra de negócio)
-      parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex('Branco')}"></span>Base: Branco</span>`);
+      // Acabamento marmorizado: nunca exibir cor da peça nem folha metálica junto
+      parts.push(`<span class="cart-custom-tag">Acabamento: Marmorizado</span>`);
       if (item.marble_color) {
-        parts.push(`<span class="cart-custom-tag">Marmorizado: ${item.marble_color}</span>`);
-      } else {
-        parts.push(`<span class="cart-custom-tag">Marmorizado</span>`);
+        parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.marble_color)}"></span>Cor do Marmorizado: ${item.marble_color}</span>`);
       }
-    } else if (item.selected_color) {
-      parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.selected_color)}"></span>${item.selected_color}</span>`);
-    }
-    if (item.metallic_type && item.metallic_type !== 'none') {
-      parts.push(`<span class="cart-custom-tag">${METALLIC_LABELS[item.metallic_type] || item.metallic_type}</span>`);
+    } else {
+      if (item.selected_color) {
+        parts.push(`<span class="cart-custom-tag"><span class="cart-custom-dot" style="background:${_getColorHex(item.selected_color)}"></span>Cor: ${item.selected_color}</span>`);
+      }
+      if (item.metallic_type && item.metallic_type !== 'none') {
+        parts.push(`<span class="cart-custom-tag">Folha: ${METALLIC_LABELS[item.metallic_type] || item.metallic_type}</span>`);
+      }
     }
     return parts.length ? `<div class="cart-customization">${parts.join('')}</div>` : '';
   }

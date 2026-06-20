@@ -399,19 +399,28 @@
     function buildCustomTags(i) {
       const tags = [];
       if (i.marble_enabled) {
-        tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex('Branco')};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>Base: Branco</span>`);
-        tags.push(`<span class="checkout-custom-tag">Marmorizado${i.marble_color ? `: ${i.marble_color}` : ''}</span>`);
-      } else if (i.selected_color) {
-        tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex(i.selected_color)};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>${i.selected_color}</span>`);
-      }
-      if (i.metallic_type && i.metallic_type !== 'none') {
-        tags.push(`<span class="checkout-custom-tag">${METALLIC_LABELS[i.metallic_type] || i.metallic_type}</span>`);
+        tags.push(`<span class="checkout-custom-tag">Acabamento: Marmorizado</span>`);
+        if (i.marble_color) {
+          tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex(i.marble_color)};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>Cor do Marmorizado: ${i.marble_color}</span>`);
+        }
+      } else {
+        if (i.selected_color) {
+          tags.push(`<span class="checkout-custom-tag"><span style="width:8px;height:8px;border-radius:50%;background:${getColorHex(i.selected_color)};display:inline-block;border:0.5px solid rgba(0,0,0,0.1)"></span>Cor: ${i.selected_color}</span>`);
+        }
+        if (i.metallic_type && i.metallic_type !== 'none') {
+          tags.push(`<span class="checkout-custom-tag">Folha: ${METALLIC_LABELS[i.metallic_type] || i.metallic_type}</span>`);
+        }
       }
       return tags.length ? `<div class="checkout-item-custom">${tags.join('')}</div>` : '';
     }
 
     function getColorHex(name) {
-      const m = {'Branco':'#F9F7F4','Bege':'#E8DFD0','Areia':'#C9B99A','Cinza Claro':'#C0BBB4','Cinza Escuro':'#6B6560','Preto':'#2C2A26'};
+      const m = {
+        'Branco':'#F9F7F4','Bege':'#E8DFD0','Cinza':'#A8A39B','Marrom':'#6B4F3A',
+        'Rosa':'#E3B7C0','Laranja':'#D98A4E','Amarelo':'#E8C547','Verde':'#6B8F71',
+        'Azul':'#5B7E9B','Roxo':'#8669A0','Creme':'#EFE6D5',
+        'Areia':'#C9B99A','Cinza Claro':'#C0BBB4','Cinza Escuro':'#6B6560','Preto':'#2C2A26'
+      };
       return m[name] || '#CCC';
     }
 
