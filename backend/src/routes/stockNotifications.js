@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const supabase = require('../config/supabase');
 const { auth, adminOnly, optionalAuth } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
+const { processBackInStockNotifications } = require('../utils/stockNotificationService');
 
 /* ================================================================
    PÚBLICO — Cliente solicita ser avisado
@@ -205,6 +206,38 @@ router.get('/admin/metrics', auth, adminOnly, async (req, res, next) => {
         top_products: topProducts,
       }
     });
+  } catch (err) { next(err); }
+});
+
+/* ================================================================
+   ADMIN — Disparar notificações manualmente para um produto
+   POST /api/stock-notifications/admin/trigger/:productId
+   Útil para testar o fluxo e para reprocessar notificações que
+   falharam por problema temporário de e-mail.
+================================================================ */
+router.post('/admin/trigger/:productId', auth, adminOnly, async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+
+    const { data: product, error: pErr } = await supabase
+      .from('products')
+      .select('id, name, stock, product_type')
+      .eq('id', productId)
+      .single();
+
+    if (pErr || !product) return res.status(404).json({ error: 'Produto não encontrado.' });
+    if (Number(product.stock) <= 0) {
+      return res.status(400).json({ error: 'Produto sem estoque. Reabastece o estoque antes de disparar notificações.' });
+    }
+    if (product.product_type === 'made_to_order') {
+      return res.status(400).json({ error: 'Produto sob encomenda não usa notificação de estoque.' });
+    }
+
+    // Roda em background, responde imediatamente ao admin
+    processBackInStockNotifications(productId, 0, Number(product.stock))
+      .catch(err => console.error('[BACK_IN_STOCK] Falha no trigger manual:', err?.stack || err?.message));
+
+    res.json({ message: `Disparo de notificações iniciado para "${product.name}". Verifique os logs do servidor.` });
   } catch (err) { next(err); }
 });
 

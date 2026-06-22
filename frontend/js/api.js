@@ -352,6 +352,9 @@ const api = {
     async adminMetrics() {
       return get('/stock-notifications/admin/metrics', true);
     },
+    async adminTrigger(productId) {
+      return post(`/stock-notifications/admin/trigger/${productId}`, {}, true);
+    },
   },
 
   admin: {

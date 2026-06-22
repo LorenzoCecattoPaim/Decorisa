@@ -1032,11 +1032,13 @@
       });
     }
 
-    // Verificar se categoria é velas
-    const catSel = document.getElementById('pCategory');
-    if (catSel && productData?.category?.slug === 'velas') {
-      showCandlesNote(true);
-    }
+    // Verificar se categoria é velas — feito após populateCatSelect resolver
+    const categoryId = productData?.category?.id || null;
+    populateCatSelect(categoryId).then(() => {
+      if (productData?.category?.slug === 'velas') {
+        showCandlesNote(true);
+      }
+    });
   };
 
   window.toggleProduct = async (id, active) => {
@@ -1388,18 +1390,20 @@
     } catch (err) { showToast(err.message); }
   };
 
-  /* Popula dinamicamente o <select> de categoria no formulário de produto */
-  async function populateCatSelect() {
+  /* Popula dinamicamente o <select> de categoria no formulário de produto.
+     Se categoryId for fornecido, seleciona essa opção automaticamente após carregar. */
+  async function populateCatSelect(categoryId = null) {
     const sel = document.getElementById('pCategory');
     if (!sel) return;
     try {
       const { categories } = await api.admin.allCategories();
-      const current = sel.value;
+      // Preserva o valor atual se nenhum categoryId explícito foi passado
+      const toSelect = categoryId || sel.value;
       sel.innerHTML = '<option value="">Selecionar categoria</option>' +
         (categories || [])
           .filter(c => c.active)
           .sort((a,b) => (a.sort_order||0) - (b.sort_order||0))
-          .map(c => `<option value="${c.id}" ${c.id === current ? 'selected' : ''}>${c.name}</option>`)
+          .map(c => `<option value="${c.id}" ${c.id === toSelect ? 'selected' : ''}>${c.name}</option>`)
           .join('');
     } catch {
       sel.innerHTML = '<option value="">Erro ao carregar categorias</option>';
