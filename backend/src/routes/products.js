@@ -3,6 +3,7 @@ const { body } = require('express-validator');
 const supabase  = require('../config/supabase');
 const { auth, adminOnly } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
+const { notifyStockReplenished } = require('../utils/stockNotificationService');
 
 /* Campos de personalização permitidos */
 const CUSTOM_FIELDS = [
@@ -348,6 +349,14 @@ router.put('/:id', auth, adminOnly, async (req, res, next) => {
       }
     }
 
+    /* Captura o estoque anterior ANTES de atualizar, para detectar reabastecimento */
+    let previousStock = null;
+    if (payload.stock !== undefined) {
+      const { data: before } = await supabase
+        .from('products').select('stock').eq('id', req.params.id).single();
+      previousStock = before?.stock ?? null;
+    }
+
     const { data, error } = await supabase
       .from('products').update(payload).eq('id', req.params.id).select().single();
     if (error) throw error;
@@ -371,6 +380,14 @@ router.put('/:id', auth, adminOnly, async (req, res, next) => {
         }));
         await supabase.from('product_available_marble_colors').insert(rows);
       }
+    }
+
+    /* Estoque reabastecido (0 → positivo): dispara notificações automaticamente.
+       Roda em background — não atrasa nem quebra a resposta ao admin. */
+    if (previousStock === 0 && Number(data.stock) > 0) {
+      notifyStockReplenished(data.id).catch(err =>
+        console.error('[stock-notifications] Falha ao disparar:', err.message)
+      );
     }
 
     res.json({ product: data });

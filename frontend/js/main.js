@@ -277,15 +277,18 @@ function renderProductCard(p) {
   const price = Number(p.price) === 0
     ? '<span style="font-size:13px;letter-spacing:0.08em">Sob consulta</span>'
     : fmtPrice(p.price);
+  const isOutOfStock = p.product_type === 'stock' && Number(p.stock) <= 0;
 
   return `
     <article class="product-card reveal"
             onclick="window.location='${pageHref('produto.html')}?slug=${p.slug}'"
              style="cursor:pointer">
       <div class="product-img-wrap">
-        ${p.badge ? `<div class="product-badge">${p.badge}</div>` : ''}
+        ${isOutOfStock
+          ? '<div class="product-badge" style="background:rgba(44,42,38,0.78)">Fora de estoque</div>'
+          : (p.badge ? `<div class="product-badge">${p.badge}</div>` : '')}
         ${coverImg
-          ? `<img src="${coverImg.url}" alt="${coverImg.alt || p.name}" style="width:100%;height:100%;object-fit:cover">`
+          ? `<img src="${coverImg.url}" alt="${coverImg.alt || p.name}" style="width:100%;height:100%;object-fit:cover${isOutOfStock ? ';filter:grayscale(35%);opacity:0.82' : ''}">`
           : `<div class="premium-placeholder">
                <div class="premium-placeholder-mark" aria-hidden="true">
                  <svg viewBox="0 0 160 200" width="92" height="116" fill="none" stroke="currentColor" stroke-width="1.25">
@@ -296,10 +299,15 @@ function renderProductCard(p) {
                <span>Imagem do produto em breve</span>
              </div>`}
         <div class="product-quick-add">
-          <button class="btn-primary" style="font-size:10px;padding:10px 20px"
-            onclick="event.stopPropagation();handleQuickAdd('${p.slug}',${p.id},'${p.name}')">
-            ${Number(p.price) === 0 ? 'Solicitar' : 'Adicionar'}
-          </button>
+          ${isOutOfStock
+            ? `<button class="btn-primary" style="font-size:10px;padding:10px 20px"
+                onclick="event.stopPropagation();window.location='${pageHref('produto.html')}?slug=${p.slug}'">
+                Avise-me
+              </button>`
+            : `<button class="btn-primary" style="font-size:10px;padding:10px 20px"
+                onclick="event.stopPropagation();handleQuickAdd('${p.slug}',${p.id},'${p.name}')">
+                ${Number(p.price) === 0 ? 'Solicitar' : 'Adicionar'}
+              </button>`}
         </div>
       </div>
       <div class="product-material">${p.material || ''}</div>

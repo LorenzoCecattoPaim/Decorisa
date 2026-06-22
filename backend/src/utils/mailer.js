@@ -143,6 +143,31 @@ const mailer = {
         <p>${message.replace(/\n/g,'<br>')}</p>
       `)
     });
+  },
+
+  async sendStockReplenished({ to, name, productName, productImage, productUrl }) {
+    await transporter.sendMail({
+      from: process.env.MAIL_FROM,
+      to,
+      subject: 'Seu produto voltou para a Decorisa ✨',
+      html: base(`
+        <h2>Boas notícias, ${name}!</h2>
+        <p>O produto que você estava de olho voltou ao estoque — e pode esgotar novamente, então não demore.</p>
+        <div class="divider"></div>
+        ${productImage ? `
+          <div style="text-align:center;margin:24px 0">
+            <img src="${productImage}" alt="${productName}" style="max-width:280px;width:100%;border-radius:4px">
+          </div>
+        ` : ''}
+        <p style="text-align:center;font-size:18px;font-weight:300;color:#2C2A26;margin:0 0 24px">${productName}</p>
+        <div style="text-align:center">
+          <a href="${productUrl}" class="btn">Ver produto</a>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size:13px;text-align:center;color:#8A8478">Garanta sua peça antes que ela esgote novamente.</p>
+        <p style="font-size:12px;text-align:center;color:#8A8478;margin-top:24px">Equipe Decorisa</p>
+      `)
+    });
   }
 };
 

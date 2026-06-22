@@ -168,6 +168,7 @@ vercel --prod
    MAIL_PASS=re_sua_chave
    MAIL_FROM=Decorisa <noreply@seudominio.com.br>
    ```
+5. Para testar o envio (ex: notificação de retorno ao estoque), zere o estoque de um produto tipo "Em Estoque", cadastre uma notificação pela página do produto e depois atualize o estoque para um valor positivo pelo painel admin — o e-mail é disparado automaticamente.
 
 ### 4.3 Número de WhatsApp
 Em todos os arquivos HTML, substitua `5511999999999` pelo seu número real (com código do país, sem + e sem espaços).
