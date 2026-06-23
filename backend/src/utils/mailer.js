@@ -1,15 +1,9 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-  host: process.env.MAIL_HOST,
-  port: parseInt(process.env.MAIL_PORT || '465'),
-  secure: true,
-  auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASS },
-});
-
-const logoUrl = process.env.FRONTEND_URL + '/assets/svg/logo-email.png';
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 function base(content) {
+  const frontendUrl = process.env.FRONTEND_URL || '';
   return `<!DOCTYPE html>
 <html lang="pt-BR">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -35,22 +29,25 @@ function base(content) {
   <div class="body">${content}</div>
   <div class="footer">
     © 2026 Decorisa · Campestre da Serra, RS · <a href="mailto:contato@decorisa.com.br" style="color:#8A8478">contato@decorisa.com.br</a><br>
-    <a href="${process.env.FRONTEND_URL}/privacidade" style="color:#8A8478">Política de privacidade</a>
+    <a href="${frontendUrl}/privacidade" style="color:#8A8478">Política de privacidade</a>
   </div>
 </div></body></html>`;
 }
 
+const FROM = process.env.MAIL_FROM || 'Decorisa <onboarding@resend.dev>';
+const FRONTEND_URL = () => process.env.FRONTEND_URL || '';
+
 const mailer = {
   async sendWelcome({ to, name }) {
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+    await resend.emails.send({
+      from: FROM,
       to,
       subject: 'Bem-vinda à Decorisa 🌿',
       html: base(`
         <h2>Olá, ${name}!</h2>
         <p>Que bom ter você por aqui. Sua conta foi criada com sucesso na <strong>Decorisa</strong>.</p>
         <p>Explore nossa coleção de objetos artesanais em concreto — cada peça é produzida sob demanda com cuidado único.</p>
-        <a href="${process.env.FRONTEND_URL}/loja" class="btn">Explorar coleção</a>
+        <a href="${FRONTEND_URL()}/loja" class="btn">Explorar coleção</a>
         <div class="divider"></div>
         <p style="font-size:12px;color:#8A8478">Se não criou esta conta, ignore este e-mail.</p>
       `)
@@ -62,8 +59,8 @@ const mailer = {
       `<tr><td>${i.product_name} × ${i.quantity}</td><td>R$ ${Number(i.total_price).toFixed(2).replace('.',',')}</td></tr>`
     ).join('');
 
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+    await resend.emails.send({
+      from: FROM,
       to,
       subject: `Pedido ${order.order_number} confirmado — Decorisa`,
       html: base(`
@@ -87,14 +84,14 @@ const mailer = {
           <p style="margin:0;font-size:12px;color:#8A8478">Entraremos em contato quando seu pedido estiver pronto para retirada.</p>
         </div>
         ` : `<p>Você receberá um e-mail com o código de rastreio assim que o pedido for enviado.</p>`}
-        <a href="${process.env.FRONTEND_URL}/cliente" class="btn">Acompanhar pedido</a>
+        <a href="${FRONTEND_URL()}/cliente" class="btn">Acompanhar pedido</a>
       `)
     });
   },
 
   async sendOrderShipped({ to, name, orderNumber, trackingCode }) {
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+    await resend.emails.send({
+      from: FROM,
       to,
       subject: `Seu pedido ${orderNumber} foi enviado! 📦`,
       html: base(`
@@ -108,14 +105,14 @@ const mailer = {
         ` : ''}
         <div class="divider"></div>
         <p>Esperamos que você aprecie cada detalhe da sua peça artesanal. ✨</p>
-        <a href="${process.env.FRONTEND_URL}/cliente" class="btn">Ver meus pedidos</a>
+        <a href="${FRONTEND_URL()}/cliente" class="btn">Ver meus pedidos</a>
       `)
     });
   },
 
   async sendPasswordReset({ to, name, resetUrl }) {
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+    await resend.emails.send({
+      from: FROM,
       to,
       subject: 'Redefinição de senha — Decorisa',
       html: base(`
@@ -130,8 +127,8 @@ const mailer = {
   },
 
   async sendContactMessage({ name, email, subject, message }) {
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+    await resend.emails.send({
+      from: FROM,
       to: process.env.ADMIN_EMAIL,
       subject: `[Contato] ${subject} — ${name}`,
       html: base(`
@@ -146,8 +143,8 @@ const mailer = {
   },
 
   async sendStockReplenished({ to, name, productName, productImage, productUrl }) {
-    await transporter.sendMail({
-      from: process.env.MAIL_FROM,
+    await resend.emails.send({
+      from: FROM,
       to,
       subject: 'Seu produto voltou para a Decorisa ✨',
       html: base(`
